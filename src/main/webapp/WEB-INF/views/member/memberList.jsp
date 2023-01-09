@@ -75,10 +75,10 @@
       <li class="page-item"><a class="page-link text-secondary" href="${ctp}/member/memberList?mid=${mid}&pag=${(pageVo.curBlock-1)*pageVo.blockSize + 1}">이전블록</a></li>
     </c:if>
     <c:forEach var="i" begin="${(pageVo.curBlock)*pageVo.blockSize + 1}" end="${(pageVo.curBlock)*pageVo.blockSize + pageVo.blockSize}" varStatus="st">
-      <c:if test="${i <= pageVo.totPage && i == pag}">
+      <c:if test="${i <= pageVo.totPage && i == pageVo.pag}">
     		<li class="page-item active"><a class="page-link bg-secondary border-secondary" href="${ctp}/member/memberList?mid=${mid}&pag=${i}">${i}</a></li>
     	</c:if>
-      <c:if test="${i <= pageVo.totPage && i != pag}">
+      <c:if test="${i <= pageVo.totPage && i != pageVo.pag}">
     		<li class="page-item"><a class="page-link text-secondary" href="${ctp}/member/memberList?mid=${mid}&pag=${i}">${i}</a></li>
     	</c:if>
     </c:forEach>

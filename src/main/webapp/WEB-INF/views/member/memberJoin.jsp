@@ -216,14 +216,28 @@
     		}
     	});
     }
+    
+    // 이미지 1장 미리보기
+		function photoView(photo) {
+			if (photo.files && photo.files[0]) {
+				let reader = new FileReader();
+				reader.onload = function(e) {		// 이미지가 로드된 경우에 실행한다.
+					document.getElementById('demo').src = e.target.result;	// demo의 src속성에 이미지파일을 넣는다.
+				}
+				reader.readAsDataURL(photo.files[0]);	// reader가 이미지를 읽도록 한다.
+			}
+			else {
+				document.getElementById('demo').src = "";
+			}
+		}
   </script>
 </head>
 <body>
 <jsp:include page="/WEB-INF/views/include/nav.jsp" />
 <jsp:include page="/WEB-INF/views/include/slide2.jsp" />
 <div class="container" style="padding:30px">
-  <!-- <form name="myform" method="post" class="was-validated" enctype="multipart/form-data"> -->
-  <form name="myform" method="post" class="was-validated">
+  <form name="myform" method="post" class="was-validated" enctype="multipart/form-data">
+  <!-- <form name="myform" method="post" class="was-validated"> -->
     <h2>회 원 가 입</h2>
     <br/>
     <div class="form-group">
@@ -394,7 +408,8 @@
     </div>
     <div  class="form-group">
       회원 사진(파일용량:2MByte이내) :
-      <input type="file" name="fName" id="file" class="form-control-file border"/>
+      <input type="file" name="fName" id="file" onchange="photoView(this);" class="form-control-file border"/>
+      <img id="demo" width="150px"/>
     </div>
     <button type="button" class="btn btn-secondary" onclick="fCheck()">회원가입</button> &nbsp;
     <button type="reset" class="btn btn-secondary">다시작성</button> &nbsp;

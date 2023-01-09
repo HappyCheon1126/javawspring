@@ -20,7 +20,7 @@ public class PageProcess {
 		int totRecCnt = 0;
 		
 		if(section.equals("member")) {
-		  totRecCnt = memberDAO.totRecCnt();
+			totRecCnt = memberDAO.totRecCnt(searchString);
 		}
 		else if(section.equals("guest")) {
 			totRecCnt = guestDAO.totRecCnt();
