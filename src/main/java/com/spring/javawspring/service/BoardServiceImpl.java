@@ -256,4 +256,9 @@ public class BoardServiceImpl implements BoardService {
 		return boardDAO.getMaxGroupId(boardIdx);
 	}
 
+	@Override
+	public void setBoardReplyUpdate(int idx, String content, String hostIp) {
+		boardDAO.setBoardReplyUpdate(idx, content, hostIp);
+	}
+
 }

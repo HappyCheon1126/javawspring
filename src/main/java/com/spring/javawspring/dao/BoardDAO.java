@@ -55,4 +55,6 @@ public interface BoardDAO {
 
 	public String getMaxGroupId(@Param("boardIdx") int boardIdx);
 
+	public void setBoardReplyUpdate(@Param("idx") int idx, @Param("content") String content, @Param("hostIp") String hostIp);
+
 }

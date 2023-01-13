@@ -57,4 +57,6 @@ public interface BoardService {
 
 	public String getMaxGroupId(int boardIdx);
 
+	public void setBoardReplyUpdate(int idx, String content, String hostIp);
+
 }

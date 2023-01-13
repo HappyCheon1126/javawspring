@@ -1,181 +1,31 @@
 package com.spring.javawspring.service;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.UUID;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.spring.javawspring.dao.StudyDAO;
-import com.spring.javawspring.vo.GuestVO;
+import com.spring.javawspring.dao.ScheduleDAO;
+import com.spring.javawspring.vo.ScheduleVO;
 
 @Service
-public class StudyServiceImpl implements StudyService {
+public class ScheduleServiceImpl implements ScheduleService {
 	
 	@Autowired
-	StudyDAO studyDAO;
+	ScheduleDAO scheduleDAO;
 
 	@Override
-	public String[] getCityStringArr(String dodo) {
-		String[] strArr = new String[100];
-		
-		if(dodo.equals("서울")) {
-			strArr[0] = "강남구";
-			strArr[1] = "서초구";
-			strArr[2] = "동대문구";
-			strArr[3] = "성북구";
-			strArr[4] = "마포구";
-			strArr[5] = "강동구";
-			strArr[6] = "관악구";
-			strArr[7] = "광진구";
-			strArr[8] = "중구";
-			strArr[9] = "서구";
-		}
-		else if(dodo.equals("경기")) {
-			strArr[0] = "수원시";
-			strArr[1] = "이천시";
-			strArr[2] = "일산시";
-			strArr[3] = "용인시";
-			strArr[4] = "시흥시";
-			strArr[5] = "광명시";
-			strArr[6] = "광주시";
-			strArr[7] = "의정부시";
-			strArr[8] = "평택시";
-			strArr[9] = "안성시";
-		}
-		else if(dodo.equals("충북")) {
-			strArr[0] = "청주시";
-			strArr[1] = "충주시";
-			strArr[2] = "괴산군";
-			strArr[3] = "진천군";
-			strArr[4] = "제천시";
-			strArr[5] = "음성군";
-			strArr[6] = "옥천군";
-			strArr[7] = "영동군";
-			strArr[8] = "단양군";
-			strArr[9] = "증평군";
-		}
-		else if(dodo.equals("충남")) {
-			strArr[0] = "천안시";
-			strArr[1] = "병천시";
-			strArr[2] = "옥산군";
-			strArr[3] = "아산시";
-			strArr[4] = "공주시";
-			strArr[5] = "당진군";
-			strArr[6] = "보령시";
-			strArr[7] = "계룡시";
-			strArr[8] = "논산시";
-			strArr[9] = "예산군";
-		}
-		return strArr;
-	}
-
-	@Override
-	public ArrayList<String> getCityArrayListArr(String dodo) {
-		ArrayList<String> vos = new ArrayList<String>();
-		
-		if(dodo.equals("서울")) {
-			vos.add("강남구");		// vos.add("강남구");
-			vos.add("서초구");
-			vos.add("동대문구");
-			vos.add("성북구");
-			vos.add("마포구");
-			vos.add("강동구");
-			vos.add("관악구");
-			vos.add("광진구");
-			vos.add("중구");
-			vos.add("서구");
-		}
-		else if(dodo.equals("경기")) {
-			vos.add("수원시");
-			vos.add("이천시");
-			vos.add("일산시");
-			vos.add("용인시");
-			vos.add("시흥시");
-			vos.add("광명시");
-			vos.add("광주시");
-			vos.add("의정부시");
-			vos.add("평택시");
-			vos.add("안성시");
-		}
-		else if(dodo.equals("충북")) {
-			vos.add("청주시");
-			vos.add("충주시");
-			vos.add("괴산군");
-			vos.add("진천군");
-			vos.add("제천시");
-			vos.add("음성군");
-			vos.add("옥천군");
-			vos.add("영동군");
-			vos.add("단양군");
-			vos.add("증평군");
-		}
-		else if(dodo.equals("충남")) {
-			vos.add("천안시");
-			vos.add("병천시");
-			vos.add("옥산군");
-			vos.add("아산시");
-			vos.add("공주시");
-			vos.add("당진군");
-			vos.add("보령시");
-			vos.add("계룡시");
-			vos.add("논산시");
-			vos.add("예산군");
-		}
-		
-		return vos;
-	}
-
-	@Override
-	public GuestVO getGuestMid(String mid) {
-		return studyDAO.getGuestMid(mid);
-	}
-
-	@Override
-	public ArrayList<GuestVO> getGuestNames(String mid) {
-		return studyDAO.getGuestNames(mid);
-	}
-
-	@Override
-	public int fileUpload(MultipartFile fName) {
-		int res = 0;
-		try {
-			UUID uid = UUID.randomUUID();
-			String oFileName = fName.getOriginalFilename();
-			String saveFileName = uid + "_" + oFileName;
-			
-			writeFile(fName, saveFileName);
-			res = 1;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return res;
-	}
-
-	public void writeFile(MultipartFile fName, String saveFileName) throws IOException {
-		byte[] data = fName.getBytes();
-		
+	public void getSchedule() {
 		HttpServletRequest request = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
-		// request.getRealPath("/resources/pds/temp/");
-		String realPath = request.getSession().getServletContext().getRealPath("/resources/pds/temp/");
 		
-		FileOutputStream fos = new FileOutputStream(realPath + saveFileName);
-		fos.write(data);
-		fos.close();
-	}
-
-	@Override
-	public void getCalendar() {
-	  // model객체를 사용하게되면 불필요한 메소드가 많이 따라오기에 여기서는 request객체를 사용했다.
-		HttpServletRequest request = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
+		HttpSession session = request.getSession();
+		String mid = (String) session.getAttribute("sMid");
 		
 		// 오늘 날짜 저장시켜둔다.(calToday변수, 년(toYear), 월(toMonth), 일(toDay))
 		Calendar calToday = Calendar.getInstance();
@@ -226,6 +76,17 @@ public class StudyServiceImpl implements StudyService {
 	  calNext.set(nextYear, nextMonth, 1);  		// 다음 달력 셋팅
 	  int nextStartWeek = calNext.get(Calendar.DAY_OF_WEEK);  // 다음달의 1일에 해당하는 요일값을 가져온다.
 	  
+	  // sql에 등록된 dataformat의 비교형식을 맞춰주기위한 날짜형식변환작업
+	  // 해당 년월의 형식 변환?  2023-1 ===>>  2023-01
+	  String ym = "";
+	  int intMM = mm + 1;
+	  if(intMM >= 1 && intMM <= 9) ym = yy + "-0" + (mm + 1);
+	  else ym = yy + "-" + (mm + 1);
+	  
+	  // 스케줄에 등록되어 있는 일정들을 가져오기
+	  List<ScheduleVO> vos = scheduleDAO.getScheduleList(mid, ym);
+	  request.setAttribute("vos", vos);
+	  
 	  /* ---------  아래는  앞에서 처리된 값들을 모두 request객체에 담는다.  -----------------  */
 	  
 	  // 오늘기준 달력...
@@ -249,4 +110,35 @@ public class StudyServiceImpl implements StudyService {
 		request.setAttribute("preLastDay", preLastDay);				// 이전달의 마지막일자를 기억하고 있는 변수
 		request.setAttribute("nextStartWeek", nextStartWeek);	// 다음달의 1일에 해당하는 요일을 기억하고있는 변수
 	}
+
+	@Override
+	public List<ScheduleVO> getScheduleMenu(String mid, String ymd) {
+		String mm = "", dd = "";
+		String[] ymdArr = ymd.split("-");
+		// 2023-1-5/2023-1-15/2023-10-5  ==> 2023-01-05
+		if(ymd.length() != 10) {
+			if(ymdArr[1].length() == 1) mm = "0" + ymdArr[1];
+			else mm = ymdArr[1];
+			if(ymdArr[2].length() == 1) dd = "0" + ymdArr[2];
+			else dd = ymdArr[2];
+			ymd = ymdArr[0] + "-" + mm + "-" + dd;
+		}
+		return scheduleDAO.getScheduleMenu(mid, ymd);
+	}
+
+	@Override
+	public void setScheduleInputOk(ScheduleVO vo) {
+		scheduleDAO.setScheduleInputOk(vo);
+	}
+
+	@Override
+	public void setScheduleUpdateOk(ScheduleVO vo) {
+		scheduleDAO.setScheduleUpdateOk(vo);
+	}
+
+	@Override
+	public void setScheduleDeleteOk(int idx) {
+		scheduleDAO.setScheduleDeleteOk(idx);
+	}
+
 }

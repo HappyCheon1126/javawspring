@@ -64,6 +64,10 @@
   <update id="setLevelOrderPlusUpdate">
   	 update  boardReply2 set levelOrder = levelOrder + 1  where boardIdx = #{replyVo.boardIdx} and groupId = #{replyVo.groupId} and levelOrder > #{replyVo.levelOrder};
   </update>
+  
+  <update id="setBoardReplyUpdate">
+  	 update  boardReply2 set content = #{content}, hostIp = #{hostIp}  where idx = #{idx};
+  </update>
 
   
   

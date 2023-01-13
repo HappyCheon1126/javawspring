@@ -259,71 +259,6 @@
     		}
     	});
     }
-    
-    // 답변글-대댓글(부모댓글의 댓글-대댓글) 수정처리
-    function updateReply(idx,content) {
-    	let insReply = '';
-    	insReply += '<div class="container">';
-    	insReply += '<table class="m-2 p-0" style="width:90%">';
-    	insReply += '<tr>';
-    	insReply += '<td class="p-0 text-left">';
-    	insReply += '<div>';
-    	insReply += '댓글 수정하기: &nbsp;';
-    	insReply += '<input type="text" name="nickName" value="${sNickName}" size="6" readonly class="p-0"/>';
-    	insReply += '</div>';
-    	insReply += '</td>';
-    	insReply += '<td>';
-    	insReply += '<input type="button" value="댓글수정" onclick="replyUpdate('+idx+')"/>';
-    	insReply += '</td>';
-    	insReply += '</tr>';
-    	insReply += '<tr>';
-    	insReply += '<td colspan="2" class="text-center p-0">';
-    	insReply += '<textarea rows="3" class="form-control p-0" name="content" id="content'+idx+'">';
-    	insReply += content.replaceAll("<br/>","\n");
-    	insReply += '</textarea>';
-    	insReply += '</td>';
-    	insReply += '</tr>';
-    	insReply += '</table>';
-    	insReply += '</div>';
-    	
-    	$("#replyBoxOpenBtn"+idx).hide();
-    	$("#replyBoxUpdateBtn"+idx).show();
-    	$("#replyBoxCloseBtn"+idx).show();
-    	$("#replyBox"+idx).slideDown(500);
-    	$("#replyBox"+idx).html(insReply);
-    }
-    // 대댓글 수정하기
-    function replyUpdate(idx) {
-    	//content = "#content"+idx;
-    	//let contentVal = $(content).val();
-    	let content = $("#content"+idx).val();
-    	let hostIp = "${pageContext.request.remoteAddr}";
-    	
-    	if(content == "") {
-    		alert("답변글(대댓글)을 입력하세요!");
-    		$("#content"+idx).focus();
-    		return false;
-    	}
-    	
-    	let query = {
-    			idx  : idx,
-    			content		: content,
-    			hostIp		: hostIp
-    	}
-    	
-    	$.ajax({
-    		type  : "post",
-    		url   : "${ctp}/board/boardReplyUpdate",
-    		data  : query,
-    		success:function() {
-    			alert('수정완료');
-    			location.reload();
-    		},
-    		error : function() {
-    			alert("전송오류!!");
-    		}
-    	});
-    }
   </script>
 </head>
 <body>
@@ -450,9 +385,7 @@
 	      <td class="text-center">${replyVo.WDate}</td>
 	      <td class="text-center">${replyVo.hostIp}</td>
 	      <td class="text-center">
-	        <c:set var="content" value="${fn:replace(replyVo.content, newLine, '<br/>')}"/>
 	      	<input type="button" value="답글" onclick="insertReply('${replyVo.idx}','${replyVo.groupId}','${replyVo.level}','${replyVo.levelOrder}','${replyVo.nickName}')" id="replyBoxOpenBtn${replyVo.idx}" class="btn btn-info btn-sm" />
-	      	<input type="button" value="수정" onclick="updateReply('${replyVo.idx}','${content}')" id="replyBoxUpdateBtn${replyVo.idx}" class="btn btn-info btn-sm" />
 	      	<input type="button" value="닫기" onclick="closeReply('${replyVo.idx}')" id="replyBoxCloseBtn${replyVo.idx}" class="btn btn-warning btn-sm" style="display:none;"/>
 	      </td>
 	    </tr>

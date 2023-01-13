@@ -126,7 +126,7 @@ public class BoardController {
 		
 		// 댓글 가져오기(replyVOs) : 출력할때는 1차정렬이 groupId오름차순이고, 2차가 levelOrder오름차순으로 출력한다.
 		List<BoardReplyVO> replyVos = boardService.getBoardReply(idx);
-		System.out.println(replyVos);
+		//System.out.println(replyVos);
 		model.addAttribute("replyVos", replyVos);
 		
 		return "board/boardContent";
@@ -330,4 +330,14 @@ public class BoardController {
 		boardService.setBoardReplyDeleteOk(idx);
 		return "";
 	}
+	
+	// 댓글 수정하기
+	@ResponseBody
+	@RequestMapping(value = "/boardReplyUpdate", method=RequestMethod.POST)
+	public String boardReplyUpdatePost(int idx, String content, String hostIp) {
+		boardService.setBoardReplyUpdate(idx, content, hostIp);
+		return "";
+	}
+	
+	
 }
