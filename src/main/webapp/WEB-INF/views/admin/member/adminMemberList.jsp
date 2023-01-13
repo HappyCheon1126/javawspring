@@ -9,6 +9,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>adminMemberList.jsp</title>
   <jsp:include page="/WEB-INF/views/include/bs4.jsp" />
+  <style>
+    body {
+      font-size: 0.9em;
+    }
+  </style>
   <script>
     'use strict';
     
@@ -86,7 +91,7 @@
         <td><a href="${ctp}/adMemInfor.ad?mid=${vo.mid}&pag=${pageVo.pag}">${vo.mid}</a></td>
         <td>${vo.nickName}</td>
         <td>${vo.name}<c:if test="${sLevel == 0 && vo.userInfor == '비공개'}"><font color='red'>(비공개)</font></c:if></td>
-        <td>${fn:substring(vo.startDate,0,19)}</td>
+        <td>${fn:substring(vo.startDate,0,10)}</td>
         <td>${fn:substring(vo.lastDate,0,19)}</td>
         <td>
           <form name="levelForm">

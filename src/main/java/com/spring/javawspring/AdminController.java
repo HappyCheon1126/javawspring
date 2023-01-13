@@ -1,6 +1,9 @@
 package com.spring.javawspring;
 
+import java.io.File;
 import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -52,7 +55,7 @@ public class AdminController {
 	public String adminMemberListGet(Model model,
 			@RequestParam(name="mid", defaultValue = "", required = false) String mid,
 			@RequestParam(name="pag", defaultValue = "1", required = false) int pag,
-			@RequestParam(name="pageSize", defaultValue = "3", required = false) int pageSize) {
+			@RequestParam(name="pageSize", defaultValue = "10", required = false) int pageSize) {
 		
 		PageVO pageVo = pageProcess.totRecCnt(pag, pageSize, "member", "", mid);
 		
@@ -72,6 +75,38 @@ public class AdminController {
 	public String adminMemberLevelPost(int idx, int level) {
 		int res = adminService.setMemberLevelCheck(idx, level);
 		return res+"";
+	}
+	
+	// ckeditor폴더의 파일 리스트 보여주기
+	@SuppressWarnings("deprecation")
+	@RequestMapping(value = "/file/fileList", method = RequestMethod.GET)
+	public String fileListGet(HttpServletRequest request, Model model) {
+		String realPath = request.getRealPath("/resources/data/ckeditor/");
+		
+		String[] files = new File(realPath).list();
+		
+		model.addAttribute("files", files);
+		
+		return "admin/file/fileList";
+	}
+	
+	// 선택된 파일 삭제처리하기
+	@SuppressWarnings("deprecation")
+	@ResponseBody
+	@RequestMapping(value = "/fileSelectDelete", method = RequestMethod.POST)
+	public String fileSelectDeleteGet(HttpServletRequest request, String delItems) {
+		// System.out.println("delItems : " + delItems);
+		String realPath = request.getRealPath("/resources/data/ckeditor/");
+		delItems = delItems.substring(0, delItems.length()-1);
+		
+		String[] fileNames = delItems.split("/");
+		
+		for(String fileName : fileNames) {
+			String realPathFile = realPath + fileName;
+			new File(realPathFile).delete();
+		}
+		
+		return "1";
 	}
 	
 }
