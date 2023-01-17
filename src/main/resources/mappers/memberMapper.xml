@@ -41,6 +41,11 @@
  		select * from member2 <if test="mid != ''"> where mid like concat('%',#{mid},'%') </if> order by idx desc limit #{startIndexNo},#{pageSize};
   </select>
   
+  <select id="getMemberNickNameEmailCheck" resultType="com.spring.javawspring.vo.MemberVO">
+  	select * from member2 where nickName = #{nickName} and email = #{email};
+  </select>
+  
+  
   <!-- 
   <update id="setTodayCntUpdate">
   	update member2 set todayCnt = 0 where mid = #{mid};
@@ -62,10 +67,18 @@
   	update member2 set userDel='OK' where mid = #{mid};
   </update>
   
+  <update id="setMemberUserDelCheck">
+  	update member2 set userDel='NO' where mid = #{mid};
+  </update>
+  
   
   
   <insert id="setMemberJoinOk">
   	insert into member2 values (default,#{vo.mid},#{vo.pwd},#{vo.nickName},#{vo.name},#{vo.gender},#{vo.birthday},#{vo.tel},#{vo.address},#{vo.email},#{vo.homePage},#{vo.job},#{vo.hobby},#{vo.photo},#{vo.content},#{vo.userInfor},default,default,default,default,default,default,default);
+  </insert>
+  
+  <insert id="setKakaoMemberInputOk">
+  	insert into member2 values (default,#{mid},#{pwd},#{nickName},'','남자',now(),'010- - ','/ / / /',#{email},'http://','기타','기타',default,'',default,default,default,default,default,default,default,default);
   </insert>
   
 </mapper>

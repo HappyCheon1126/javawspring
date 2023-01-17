@@ -57,6 +57,62 @@ public class MemberController {
 		return "member/memberLogin";
 	}
 	
+	
+	// 카카오 로그인 완료후 수행할 내용들을 기술한다.
+	@RequestMapping(value="/memberKakaoLogin", method=RequestMethod.GET)
+	public String memberKakaoLoginGet(HttpSession session, HttpServletRequest request, HttpServletResponse response,
+			String nickName,
+			String email) {
+		
+		// 카카오로그인한 회원이 현재 우리 회원인지를 조회한다.
+		// 이미 가입된 회원이라면 서비스를 사용하게 하고, 그렇지 않으면 강제로 회원 가입시킨다.
+		MemberVO vo = memberService.getMemberNickNameEmailCheck(nickName, email);
+		
+		// 현재 우리회원이 아니면 자동회원가입처리..(가입필수사항: 아이디,닉네임,이메일) - 아이디는 이메일주소의 '@'앞쪽 이름을 사용하기로 한다.
+		if(vo == null) {
+			// 아이디 결정하기
+			String mid = email.substring(0, email.indexOf("@"));
+			
+			// 임시 비밀번호 발급하기(UUID 8자리로 발급하기로 한다. -> 발급후 암호화시켜 DB에 저장)
+			UUID uid = UUID.randomUUID();
+			String pwd = uid.toString().substring(0,8);
+			session.setAttribute("sImsiPwd", pwd);	// 임시비밀번호를 발급하여 로그인후 변경처리하도록 한다.
+			pwd = passwordEncoder.encode(pwd);
+			
+			// 새로 발급된 임시비밀번호를 메일로 전송처리한다.
+			//  메일 처리부분... 생략함.
+			
+			// 자동 회원 가입처리한다.
+			memberService.setKakaoMemberInputOk(mid, pwd, nickName, email);
+			
+			// 가입 처리된 회원의 정보를 다시 읽어와서 vo에 담아준다.
+			vo = memberService.getMemberIdCheck(mid);
+		}
+		// 만약에 탈퇴신청한 회원이 카카오로그인처리하였다라면 'userDel'필드를 'NO'로 업데이트한다.
+		if(!vo.getUserDel().equals("NO")) {
+			memberService.setMemberUserDelCheck(vo.getMid());
+		}
+		
+		// 회원 인증처리된 경우 수행할 내용? strLevel처리, session에 필요한 자료를 저장, 쿠키값처리, 그날 방문자수 1 증가(방문포인트도 증가), ..
+		String strLevel = "";
+		if(vo.getLevel() == 0) strLevel = "관리자";
+		else if(vo.getLevel() == 1) strLevel = "운영자";
+		else if(vo.getLevel() == 2) strLevel = "우수회원";
+		else if(vo.getLevel() == 3) strLevel = "정회원";
+		else if(vo.getLevel() == 4) strLevel = "준회원";
+		
+		session.setAttribute("sLevel", vo.getLevel());
+		session.setAttribute("sStrLevel", strLevel);
+		session.setAttribute("sMid", vo.getMid());
+		session.setAttribute("sNickName", vo.getNickName());
+		
+		// 로그인한 사용자의 오늘 방문횟수(포인트) 누적...
+		memberService.setMemberVisitProcess(vo);
+		
+		return "redirect:/msg/memberLoginOk?mid="+vo.getMid();
+	}
+	
+	// 일반 로그인 OK 처리
 	@RequestMapping(value = "/memberLogin", method=RequestMethod.POST)
 	public String memberLoginPost(HttpServletRequest request, HttpServletResponse response, HttpSession session,
 			@RequestParam(name="mid", defaultValue = "", required = false) String mid,
@@ -340,8 +396,11 @@ public class MemberController {
 	
 	// 비밀번호 변경하기 처리
 	@RequestMapping(value = "/memberPwdUpdate", method = RequestMethod.POST)
-	public String memberPwdUpdatePost(String mid, String pwd) {
+	public String memberPwdUpdatePost(String mid, String pwd, HttpSession session) {
 		memberService.setMemberPwdUpdate(mid, passwordEncoder.encode(pwd));
+		// 카카오로그인으로 비밀번호 변경한 사용자는 임시비밀번호 세션을 삭제한다.
+		if(session.getAttribute("sImsiPwd") != null) session.removeAttribute("sImsiPwd");
+		
 		return "redirect:/msg/memberPwdUpdateOk";
 	}
 	

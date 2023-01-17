@@ -39,7 +39,7 @@
 	  <br/>
 	  <table class="table table-bordered">
 	    <tr>
-	      <th>비밀번호</th>
+	      <th><c:if test="${empty param.flag}">새 </c:if>비밀번호</th>
 	      <td>
 	        <input type="password" name="pwd" id="pwd" autofocus required class="form-control"/>
 	        <div class="invalid-feedback">비밀번호를 입력하세요.</div>
