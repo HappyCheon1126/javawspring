@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import javax.mail.MessagingException;
@@ -29,8 +30,10 @@ import com.spring.javawspring.common.SecurityUtil;
 import com.spring.javawspring.service.MemberService;
 import com.spring.javawspring.service.StudyService;
 import com.spring.javawspring.vo.GuestVO;
+import com.spring.javawspring.vo.KakaoAddressVO;
 import com.spring.javawspring.vo.MailVO;
 import com.spring.javawspring.vo.MemberVO;
+import com.spring.javawspring.vo.QrCodeVO;
 
 @Controller
 @RequestMapping("/study")
@@ -316,7 +319,7 @@ public class StudyControll {
 	
 	// QR Code 생성하기
 	@ResponseBody
-	@RequestMapping(value = "/qrCode", method = RequestMethod.POST)
+	@RequestMapping(value = "/qrCode", method = RequestMethod.POST, produces="application/text; charset=utf8")
 	public String qrCodePost(HttpServletRequest request,
 			@RequestParam(name="mid", defaultValue = "", required = false) String mid,
 			@RequestParam(name="moveFlag", defaultValue = "", required = false) String moveFlag) {
@@ -326,4 +329,91 @@ public class StudyControll {
 		
 		return qrCodeName;
 	}
+	
+	// QR Code 생성하기2
+	@ResponseBody
+	@RequestMapping(value = "/qrCode2", method = RequestMethod.POST, produces="application/text; charset=utf8")
+	public String qrCode2Post(HttpServletRequest request,
+			@RequestParam(name="moveFlag", defaultValue = "", required = false) String moveFlag) {
+		String realPath = request.getSession().getServletContext().getRealPath("/resources/data/qrCode/");
+		
+		String qrCodeName = studyService.qrCreate2(moveFlag, realPath);
+		
+		return qrCodeName;
+	}
+	
+	// QR Code 내역 검색하기
+	@ResponseBody
+	@RequestMapping(value = "/qrCodeSearch", method = RequestMethod.POST)
+	public QrCodeVO qrCodeSearchPost(HttpServletRequest request,
+			@RequestParam(name="idx", defaultValue = "", required = false) String idx) {
+//		QrCodeVO vo = studyService.qrCodeSearch(idx);
+//		System.out.println("vo : " + vo);
+		return studyService.qrCodeSearch(idx);
+	}
+	
+	// 카카오맵 기본 지도보기
+	@RequestMapping(value = "/kakaomap/kakaomap", method = RequestMethod.GET)
+	public String kakaomapGet() {
+		return "study/kakaomap/kakaomap";
+	}
+	
+	// 카카오맵 '마커표시/DB저장'
+	@RequestMapping(value = "/kakaomap/kakaoEx1", method = RequestMethod.GET)
+	public String kakaoEx1Get() {
+		return "study/kakaomap/kakaoEx1";
+	}
+	
+	// 카카오맵 '마커표시/DB저장'
+	@ResponseBody
+	@RequestMapping(value = "/kakaomap/kakaoEx1", method = RequestMethod.POST)
+	public String kakaoEx1Post(KakaoAddressVO vo) {
+		KakaoAddressVO searchVo = studyService.getKakaoAddressName(vo.getAddress());
+		if(searchVo != null) return "0";
+		studyService.setKakaoAddressName(vo);
+		
+		return "1";
+	}
+	
+	// 카카오맵 'DB저장된 지역의 검색/삭제'
+	@RequestMapping(value = "/kakaomap/kakaoEx2", method = RequestMethod.GET)
+	public String kakaoEx2Get(Model model,
+			@RequestParam(name="address", defaultValue = "그린컴퓨터", required = false) String address) {
+		KakaoAddressVO vo = studyService.getKakaoAddressName(address);
+		List<KakaoAddressVO> vos = studyService.getAddressNameList();
+		
+		model.addAttribute("vo", vo);
+		model.addAttribute("vos", vos);
+		model.addAttribute("address", address);
+		
+		return "study/kakaomap/kakaoEx2";
+	}
+	
+	// 선택된 지역을 카카오 DB에서 삭제하기
+	@ResponseBody
+	@RequestMapping(value = "/kakaomap/kakaoEx2Delete", method = RequestMethod.POST)
+	public String kakaoEx2DeletePost(String address) {
+		studyService.setKakaoAddressDelete(address);
+		
+		return "";
+	}
+	
+	// 카카오맵 검색후 '위도/경도/장소명' 알아내어 내DB에 저장하는 폼호출..
+	@RequestMapping(value = "/kakaomap/kakaoEx3", method = RequestMethod.GET)
+	public String kakaoEx3Get(Model model, 
+			@RequestParam(name="address", defaultValue = "", required = false) String address) {
+		model.addAttribute("address", address);
+		return "study/kakaomap/kakaoEx3";
+	}
+	
+	//	EX5 페이지 이동 뷰
+	@RequestMapping(value = "/kakaomap/kakaoEx5", method=RequestMethod.GET)
+	public String kakaoEx5Get(Model model) {
+		ArrayList<KakaoAddressVO> vos = studyService.getDistanceList();
+		
+		model.addAttribute("vos",vos);
+		
+		return "study/kakaomap/kakaoEx5";
+	}
+	
 }

@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import javax.imageio.ImageIO;
@@ -25,8 +26,11 @@ import com.google.zxing.client.j2se.MatrixToImageConfig;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.spring.javawspring.common.DistanceCal;
 import com.spring.javawspring.dao.StudyDAO;
 import com.spring.javawspring.vo.GuestVO;
+import com.spring.javawspring.vo.KakaoAddressVO;
+import com.spring.javawspring.vo.QrCodeVO;
 
 @Service
 public class StudyServiceImpl implements StudyService {
@@ -268,14 +272,13 @@ public class StudyServiceImpl implements StudyService {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddhhmmss");
 		UUID uid = UUID.randomUUID();
 		String strUid = uid.toString().substring(0,2);
-		
-		qrCodeName = sdf.format(new Date()) + "_" + mid + "_" + moveFlag + "_" + strUid;
+		qrCodeName = sdf.format(new Date()) + "_" + mid + "_" + moveFlag + "_" + strUid;	// 저장될 파일명
 		
 		try {
 			File file = new File(realPath);
 			if(!file.exists()) file.mkdirs();
 			
-			String codeFlag = new String(moveFlag.getBytes("UTF-8"), "ISO-8859-1");
+			moveFlag = new String(moveFlag.getBytes("UTF-8"), "ISO-8859-1");	// qr코드 생성시에 moveFlag의 내용으로 qr코드가 만들어진다.
 			
 			// qr코드 만들기
 			int qrCodeColor = 0xFF000000;			// qr코드 전경색(글자색)
@@ -283,7 +286,7 @@ public class StudyServiceImpl implements StudyService {
 			
 			QRCodeWriter qrCodeWriter = new QRCodeWriter();	// QR코드 객체 생성
 			//BitMatrix bitMatrix = qrCodeWriter.encode(codeFlag, BarcodeFormat.QR_CODE, qrCodeColor, qrCodeBackColor);
-			BitMatrix bitMatrix = qrCodeWriter.encode(codeFlag, BarcodeFormat.QR_CODE, 200, 200);
+			BitMatrix bitMatrix = qrCodeWriter.encode(moveFlag, BarcodeFormat.QR_CODE, 200, 200);
 			
 			MatrixToImageConfig matrixToImageConfig = new MatrixToImageConfig(qrCodeColor, qrCodeBackColor);
 			BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix, matrixToImageConfig);
@@ -297,5 +300,86 @@ public class StudyServiceImpl implements StudyService {
 		}
 		
 		return qrCodeName;
+	}
+	
+	@Override
+	public String qrCreate2(String bigo, String realPath) {
+		String qrCodeName = "";
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		UUID uid = UUID.randomUUID();
+		String idx = uid.toString().substring(0,8);				// 고유번호로 지정한다.
+		qrCodeName = sdf.format(new Date()) + "_" + idx;	// 저장될 파일명
+		
+		try {
+			File file = new File(realPath);
+			if(!file.exists()) file.mkdirs();
+			String moveFlag = new String(bigo.getBytes("UTF-8"), "ISO-8859-1");	// qr코드 생성시에 moveFlag의 내용으로 qr코드가 만들어진다.(DB에 저장시 한글이 깨지기에 전송받은 bigo변수값은 변경시키지 않기위해 새로운 변수로 받았다.)
+			
+			// qr코드 만들기
+			int qrCodeColor = 0xFF000000;			// qr코드 전경색(글자색)
+			int qrCodeBackColor = 0xFFFFFFFF;	// qr코드 배경색
+			
+			QRCodeWriter qrCodeWriter = new QRCodeWriter();	// QR코드 객체 생성(moveFlag에 저장된 정보로 qr코드를 생성한다.)
+			BitMatrix bitMatrix = qrCodeWriter.encode(moveFlag, BarcodeFormat.QR_CODE, 200, 200);		// QR코드저장시 크기(폭/높이) 지정
+			
+			MatrixToImageConfig matrixToImageConfig = new MatrixToImageConfig(qrCodeColor, qrCodeBackColor);
+			BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix, matrixToImageConfig);
+			
+			ImageIO.write(bufferedImage, "png", new File(realPath + qrCodeName + ".png"));
+			
+			// 생성된 QR코드의 정보를 DB에 저장한다.
+			studyDAO.setQrCreateDB(idx, qrCodeName+".png", bigo);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (WriterException e) {
+			e.printStackTrace();
+		}
+		
+		return qrCodeName;
+	}
+
+	@Override
+	public QrCodeVO qrCodeSearch(String idx) {
+		return studyDAO.qrCodeSearch(idx);
+	}
+
+	@Override
+	public KakaoAddressVO getKakaoAddressName(String address) {
+		return studyDAO.getKakaoAddressName(address);
+	}
+
+	@Override
+	public void setKakaoAddressName(KakaoAddressVO vo) {
+		studyDAO.setKakaoAddressName(vo);
+	}
+
+	@Override
+	public List<KakaoAddressVO> getAddressNameList() {
+		return studyDAO.getAddressNameList();
+	}
+
+	@Override
+	public void setKakaoAddressDelete(String address) {
+		studyDAO.setKakaoAddressDelete(address);
+	}
+
+	@Override
+	public ArrayList<KakaoAddressVO> getDistanceList() {
+		
+		double centerLat=36.62935542331672;
+		double centerLongi=127.45760875128917;
+		
+		ArrayList<KakaoAddressVO> dbVOS=studyDAO.getKakaoList();
+		
+		ArrayList<KakaoAddressVO> vos=new ArrayList<KakaoAddressVO>();
+		
+		for(int i=0; i<dbVOS.size(); i++) {
+			double distance=DistanceCal.distance(centerLat, centerLongi, dbVOS.get(i).getLatitude(), dbVOS.get(i).getLongitude(), "kilometer");
+			if(distance<15) {
+				vos.add(dbVOS.get(i));
+			}
+		}
+		return vos;
 	}
 }
