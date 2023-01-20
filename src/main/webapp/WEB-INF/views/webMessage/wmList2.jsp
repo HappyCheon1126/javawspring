@@ -21,7 +21,7 @@
     	}
     	$.ajax({
     		type  : "post",
-    		url   : "${ctp}/webMessage/wmDelete2",
+    		url   : "${ctp}/webMessage/wmDelete",
     		data  : query,
     		success:function() {
     			alert("메세지가 삭제되었습니다.");
@@ -65,7 +65,7 @@
 		      </a>
 		      <c:if test="${vo.receiveSw=='n'}"><img src="${ctp}/images/new.gif"/></c:if>
 		      <c:if test="${mSw == 3 || mSw == 5}">
-		        <a href="javascript:msgDel(${vo.idx},${vo.sendId==sMid ? '3' : '1'})" class="badge badge-danger">삭제</a>
+		        <a href="javascript:msgDel(${vo.idx})" class="badge badge-danger">삭제</a>
 		      </c:if>
 		    </td>
 		    <td>
@@ -77,33 +77,6 @@
 		<tr><td colspan="4" class="m-0 p-0"></td></tr>   
   </table>
 </div>
-
-<!-- 블록 페이지 시작 -->
-<div class="text-center">
-  <ul class="pagination justify-content-center">
-    <c:if test="${pageVo.pag > 1}">
-      <li class="page-item"><a class="page-link text-secondary" href="${ctp}/webMessage/webMessage?mSw=${mSw}&mFlag=${param.mFlag}&pag=1">첫페이지</a></li>
-    </c:if>
-    <c:if test="${pageVo.curBlock > 0}">
-      <li class="page-item"><a class="page-link text-secondary" href="${ctp}/webMessage/webMessage?mSw=${mSw}&mFlag=${param.mFlag}&pag=${(pageVo.curBlock-1)*pageVo.blockSize + 1}">이전블록</a></li>
-    </c:if>
-    <c:forEach var="i" begin="${(pageVo.curBlock)*pageVo.blockSize + 1}" end="${(pageVo.curBlock)*pageVo.blockSize + pageVo.blockSize}" varStatus="st">
-      <c:if test="${i <= pageVo.totPage && i == pageVo.pag}">
-    		<li class="page-item active"><a class="page-link bg-secondary border-secondary" href="${ctp}/webMessage/webMessage?mSw=${mSw}&mFlag=${param.mFlag}&pag=${i}">${i}</a></li>
-    	</c:if>
-      <c:if test="${i <= pageVo.totPage && i != pageVo.pag}">
-    		<li class="page-item"><a class="page-link text-secondary" href="${ctp}/webMessage/webMessage?mSw=${mSw}&mFlag=${param.mFlag}&pag=${i}">${i}</a></li>
-    	</c:if>
-    </c:forEach>
-    <c:if test="${pageVo.curBlock < pageVo.lastBlock}">
-      <li class="page-item"><a class="page-link text-secondary" href="${ctp}/webMessage/webMessage?mSw=${mSw}&mFlag=${param.mFlag}&pag=${(pageVo.curBlock+1)*pageVo.blockSize + 1}">다음블록</a></li>
-    </c:if>
-    <c:if test="${pageVo.pag < pageVo.totPage}">
-      <li class="page-item"><a class="page-link text-secondary" href="${ctp}/webMessage/webMessage?mSw=${mSw}&mFlag=${param.mFlag}&pag=${pageVo.totPage}">마지막페이지</a></li>
-    </c:if>
-  </ul>
-</div>
-<!-- 블록 페이지 끝 -->
-
+<p></p>
 </body>
 </html>

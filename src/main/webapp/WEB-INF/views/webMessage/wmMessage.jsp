@@ -14,6 +14,7 @@
   	  height: 520px;
   	  text-align: center;
   	  background-color: #ddd;
+  	  overflow:auto;
   	}
   	#rightWindow {
   	  float: left;
@@ -21,6 +22,7 @@
   	  height: 520px;
   	  text-align: center;
   	  background-color: #eee;
+  	  overflow:auto;
   	}
   	#footerMargin {
   	  clear: both;
@@ -36,8 +38,8 @@
 <jsp:include page="/WEB-INF/views/include/slide2.jsp" />
 <p><br/></p>
 <!-- 
-  mSw   => 1:받은메세지, 2:새메세지, 3:보낸메세지, 4:수진확인, 5:휴지통, 6:메세지상세보기 0:메세지작성
-  mFlag => 11:받은메세지, 12:보낸메세지, 13:휴지통
+  mSw   => 1:받은메세지, 2:새메세지, 3:보낸메세지, 4:수신확인, 5:휴지통, 6:메세지상세보기 0:메세지작성
+  mFlag => 1:받은메세지, 2:새메세지, 3:보낸메세지, 5:휴지통
 -->
 <div class="container">
   <h3>☆ 메세지 관리 ☆</h3>
@@ -45,11 +47,12 @@
   <div id="leftWindow">
   	<p><br/></p>
   	<p><a href="${ctp}/webMessage/webMessage?mSw=0">메세지작성</a></p>
-  	<p><a href="${ctp}/webMessage/webMessage?mSw=1&mFlag=11">받은메세지</a></p>
-  	<p><a href="${ctp}/webMessage/webMessage?mSw=2">새메세지</a></p>
-  	<p><a href="${ctp}/webMessage/webMessage?mSw=3&mFlag=12">보낸메세지</a></p>
-  	<p><a href="${ctp}/webMessage/webMessage?mSw=4">수신확인</a></p>
-  	<p><a href="${ctp}/webMessage/webMessage?mSw=5&mFlag=13">휴지통</a></p>
+  	<p><a href="${ctp}/webMessage/webMessage?mSw=1&mFlag=1">받은메세지</a></p>
+  	<p><a href="${ctp}/webMessage/webMessage?mSw=2&mFlag=2">새메세지</a></p>
+  	<p><a href="${ctp}/webMessage/webMessage?mSw=3&mFlag=3">보낸메세지</a></p>
+  	<p><a href="${ctp}/webMessage/webMessage?mSw=4&mFlag=4">수신확인</a></p>
+  	<p><a href="${ctp}/webMessage/webMessage?mSw=5&mFlag=5">휴지통</a></p>
+  	<p><a href="${ctp}/webMessage/webMessage?mSw=7">휴지통비우기</a></p>
   </div>
   <div id="rightWindow">
   	<p>

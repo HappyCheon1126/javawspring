@@ -4,10 +4,6 @@
   <select id="getWmMessageOne" resultType="com.spring.javawspring.vo.WebMessageVO">
   	select * from webMessage where idx = #{idx};
   </select>
-<!-- 
-  mSw   => 1:받은메세지, 2:새메세지, 3:보낸메세지, 4:수신확인, 5:휴지통, 6:메세지상세보기 0:메세지작성
-  mFlag => 11:받은메세지, 12:보낸메세지, 13:휴지통
--->
   <select id="totRecCnt" resultType="int">
   	<if test="mSw == 1">	<!-- 받은메세지 -->
   		select count(*) from webMessage where receiveId = #{mid} and (receiveSw='n' or receiveSw='r');
@@ -44,5 +40,35 @@
   	</if> 
   </select>
   
+<!-- 
+  mSw   => 1:받은메세지, 2:새메세지, 3:보낸메세지, 4:수신확인, 5:휴지통, 6:메세지상세보기 0:메세지작성
+  mFlag => 1:받은메세지, 2:새메세지, 3:보낸메세지, 5:휴지통
+-->
   
+  <update id="setWmUpdate">
+    update webMessage set receiveSw='r', receiveDate=now() where idx=#{idx} and receiveId = #{mid};
+  </update>
+  
+  <update id="wmDeleteCheck">
+    <if test="mFlag == 3">
+      update webMessage set sendSw = 'x' where idx = #{idx};
+    </if>
+    <if test="mFlag == 5">
+      update webMessage set receiveSw = 'x' where idx = #{idx};
+    </if>
+    <if test="mFlag != 3 and mFlag != 5">
+      update webMessage set receiveSw = 'g' where idx = #{idx};
+    </if>
+  </update>
+  
+  <update id="setWmDeleteAll">
+    update webMessage set receiveSw = 'x'  where receiveId = #{mid} and receiveSw = 'g';
+  </update>
+  
+  
+  
+  
+  <insert id="setWmInputOk">
+    insert into webMessage values (default,#{vo.title},#{vo.content},#{vo.sendId},'s',default,#{vo.receiveId},'n',default);
+  </insert>
 </mapper>

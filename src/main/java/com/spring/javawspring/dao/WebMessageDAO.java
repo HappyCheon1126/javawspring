@@ -14,4 +14,12 @@ public interface WebMessageDAO {
 
 	public List<WebMessageVO> getWmMessageList(@Param("mid")String mid, @Param("mSw")int mSw, @Param("startIndexNo")int startIndexNo, @Param("pageSize")int pageSize);
 
+	public void setWmInputOk(@Param("vo") WebMessageVO vo);
+
+	public void setWmUpdate(@Param("idx") int idx, @Param("mid") String mid);
+
+	public void wmDeleteCheck(@Param("idx") int idx, @Param("mFlag") int mFlag);
+
+	public void setWmDeleteAll(@Param("mid") String mid);
+
 }
