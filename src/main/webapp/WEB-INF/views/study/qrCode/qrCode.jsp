@@ -29,9 +29,16 @@
   		  query = {moveFlag : moveUrl}
   		}
   		else if(no == 3) {
-  			moveUrl = myform.movieName.value + "_";
-  			moveUrl += myform.movieDate.value + "_";
-  			moveUrl += myform.movieTime.value + "_A";
+  			let movieName = myform.movieName.value;
+  			let movieDate = myform.movieDate.value;
+  			let movieTime = myform.movieTime.value;
+  			if(movieName == "" || movieDate == "" || movieTime == "") {
+  				alert("영화명과 상영일자와 상영시간을 모두 선택하셔야 합니다.");
+  				return false;
+  			}
+  			moveUrl = movieName + "_";
+  			moveUrl += movieDate + "_";
+  			moveUrl += movieTime + "_A";
   			moveUrl += myform.movieAdult.value + "_C";
   			moveUrl += myform.movieChild.value;
   			query = {moveFlag : moveUrl}
@@ -56,11 +63,20 @@
     
     // 입력된 정보를 DB에 담아준다.
     function qrCreateDB() {
-    	let moveUrl = "아이디 : " + myform.mid.value + " , ";
-    	moveUrl += "이메일 : " + myform.email.value + " , ";
-  		moveUrl += "영화제목 : " + myform.movieName.value + " , ";
-  		moveUrl += "상영일자 : " + myform.movieDate.value + " , ";
-  		moveUrl += "상영시작시간 : " + myform.movieTime.value + " , ";
+    	let mid = myform.mid.value;
+    	let email = myform.email.value;
+    	let movieName = myform.movieName.value;
+			let movieDate = myform.movieDate.value;
+			let movieTime = myform.movieTime.value;
+			if(mid.trim() == "" || email.trim() == "" || movieName == "" || movieDate == "" || movieTime == "") {
+				alert("아이디/이메일주소 입력 및 영화명과 상영일자와 상영시간을 모두 선택하셔야 합니다.");
+				return false;
+			}
+    	let moveUrl = "아이디 : " + mid + " , ";
+    	moveUrl += "이메일 : " + email + " , ";
+  		moveUrl += "영화제목 : " + movieName + " , ";
+  		moveUrl += "상영일자 : " + movieDate + " , ";
+  		moveUrl += "상영시작시간 : " + movieTime + " , ";
   		moveUrl += "성인 : " + myform.movieAdult.value + "매 , ";
   		moveUrl += "어린이 : " + myform.movieChild.value + "매";
     	
@@ -172,6 +188,7 @@
 	          <div class="row">
 	          	<div class="col"><input type="button" value="티켓예매" onclick="qrCreate(3)" class="btn btn-success form-control"/></div>
 	            <div class="col"><input type="button" value="티켓예매(DB)" onclick="qrCreateDB()" class="btn btn-info form-control"/></div>
+	            <div class="col"><input type="reset" value="다시선택" class="btn btn-warning form-control"/></div>
 	          </div>
 	        </td>
 	      </tr>
@@ -186,6 +203,7 @@
 	    </div>
 	    <hr/>
 		  <div>
+		    - 앞에서 생성된 QR코드를 찍어보고 아래 검색버튼을 눌러서 출력자료와 비교해 봅니다.<br/>
 		    <input type="text" name="bigo" id="bigo" />
 		    <input type="button" value="검색" onclick="bigoCheck()" class="btn btn-success"/>
 		  </div>

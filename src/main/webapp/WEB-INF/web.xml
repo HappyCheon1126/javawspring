@@ -25,10 +25,12 @@
 		<load-on-startup>1</load-on-startup>
 		
 		<!-- 404에러처리를 위해서 404에러때는 예외오류를 발생시켜준다. -->
+		<!-- 
 		<init-param>
 		  <param-name>throwExceptionIfNoHandlerFound</param-name>
 		  <param-value>true</param-value>
 		</init-param>
+		 -->
 		
 	</servlet>
 		

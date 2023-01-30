@@ -9,13 +9,13 @@
   <jsp:include page="/WEB-INF/views/include/bs4.jsp"></jsp:include>
   <script>
 		var address = '${address}';
-    
+		
     function addressSearch() {
     	var searchAddress = document.getElementById("searchAddress").value;
     	var latitude = document.myform.latitude.value;
     	var longitude = document.myform.longitude.value;
     	if(searchAddress == "") {  // 입력된 검색어가 없거나, 검색을 하고 왔는데, 카카오DB에 자료가 없어서 위도/경도가 값이 넘어오지 않았다면..
-    		alert("검색할 지점을 선택하세요.");
+    		alert("검색할 지점을 입력하세요.");
     		document.myform.searchAddress.focus();
     		return false;
     	}
@@ -60,10 +60,10 @@
 <jsp:include page="/WEB-INF/views/include/slide2.jsp" />
 <p><br/></p>
 <div class="container">
-  <h2>지명으로 위치검색후 위도/경도 알아내어(카카오DB에서) 내DB에 등록하기(키워드(주소명)로 장소 검색)</h2>
+  <h2>지명으로 위치검색후 카카오DB에 저장된 '위도/경도'를 알아내어, 내DB에 등록하기</h2>
   <hr/>
   <form name="myform">
-		<p>주소(지점명)입력 :
+		<p>주소(지점명)입력(키워드검색) :
 		  <input type="text" name="searchAddress" id="searchAddress" autofocus onkeypress="if(event.keyCode==13){addressSearch();}" />
 		  <input type="button" value="검색" onclick="addressSearch()" class="btn btn-success btn-sm" /> &nbsp;
 		  <input type="button" value="검색된위치를 내DB에저장" onclick="addressSave()" class="btn btn-primary btn-sm" /> &nbsp;
@@ -78,7 +78,8 @@
 	<hr/>
 	<jsp:include page="kakaoMenu.jsp"/>
 	
-	<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=158c673636c9a17a27b67c95f2c6be5c&libraries=services"></script>
+	<!-- <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=158c673636c9a17a27b67c95f2c6be5c&libraries=services"></script> -->
+	<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=7620c0118d3b9f628bbe884ab018b723&libraries=services"></script>
 	<script>
 		// 마커를 클릭하면 장소명을 표출할 인포윈도우 입니다
 		var infowindow = new kakao.maps.InfoWindow({zIndex:1});
@@ -90,18 +91,18 @@
 		    };
 		
 		// 지도를 표시할 div와  지도 옵션으로  지도를 생성합니다
-		var map = new kakao.maps.Map(mapContainer, mapOption); 
+		var map = new kakao.maps.Map(mapContainer, mapOption);
 		
 		// 장소 검색 객체를 생성합니다
-		var ps = new kakao.maps.services.Places(); 
+		var ps = new kakao.maps.services.Places();
 
 		// 키워드로 장소를 검색합니다
-		ps.keywordSearch('${address}', placesSearchCB); 
+		ps.keywordSearch(address, placesSearchCB);
+		// ps.keywordSearch('${address}', placesSearchCB); 
 
 		// 키워드 검색 완료 시 호출되는 콜백함수 입니다
 		function placesSearchCB (data, status, pagination) {
-		    if (status === kakao.maps.services.Status.OK) {
-
+			  if (status === kakao.maps.services.Status.OK) {
 		        // 검색된 장소 위치를 기준으로 지도 범위를 재설정하기위해
 		        // LatLngBounds 객체에 좌표를 추가합니다
 		        var bounds = new kakao.maps.LatLngBounds();
@@ -113,7 +114,7 @@
 		        
 		        // 검색된 장소 위치를 기준으로 지도 범위를 재설정합니다
 		        map.setBounds(bounds);
-		    } 
+		    }
 		}
 
 		// 지도에 마커를 표시하는 함수입니다(앞에서 출력된 지점을 중심으로 카카오DB에 저장되어 있는, 주변지역에 마커표시한다.)

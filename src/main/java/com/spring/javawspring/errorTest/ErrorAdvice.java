@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-@ControllerAdvice
+//@ControllerAdvice
 public class ErrorAdvice {
 	
 	private Logger logger = LoggerFactory.getLogger(ErrorAdvice.class);
 	
-	@ExceptionHandler(Exception.class)
+//	@ExceptionHandler(Exception.class)
 	public String handleException(Exception ex, Model model) {
 		
 		logger.error("예외오류발생 : {}", ex.getMessage());
@@ -28,8 +28,8 @@ public class ErrorAdvice {
 	}
 	
 	// 404에러가 발생시에 처리하는 메소드...
-	@ExceptionHandler(NoHandlerFoundException.class)
-	@ResponseStatus(value = HttpStatus.NOT_FOUND)
+//	@ExceptionHandler(NoHandlerFoundException.class)
+//	@ResponseStatus(value = HttpStatus.NOT_FOUND)
 	public String handle404(NoHandlerFoundException ex, Model model) {
 		logger.error("404 요청 오류 발생1 : {}", ex.getMessage());
 		logger.error("404 요청 오류 발생2 : {}", ex.getRequestURL());
