@@ -135,6 +135,34 @@ public class MessageController {
 			model.addAttribute("msg", "휴지통을 모두 비웠습니다.");
 			model.addAttribute("url", "webMessage/webMessage?mSw=1");
 		}
+		else if(msgFlag.equals("dbProductInputOk")) {
+			model.addAttribute("msg", "신규 상품이 등록되었습니다.");
+			model.addAttribute("url", "dbShop/dbShopList");
+		}
+		else if(msgFlag.equals("dbOptionInputOk")) {
+			model.addAttribute("msg", "옵션 항목이 등록되었습니다.");
+			model.addAttribute("url", "dbShop/dbOption");
+		}
+		else if(msgFlag.equals("dbOptionInput2Ok")) {
+			model.addAttribute("msg", "옵션 항목이 등록되었습니다.");
+			model.addAttribute("url", "dbShop/dbOption2?productName="+flag);
+		}
+		else if(msgFlag.equals("cartOrderOk")) {
+			model.addAttribute("msg", "장바구니에 상품이 등록되었습니다.\\n주문창으로 이동합니다.");
+			model.addAttribute("url", "dbShop/dbCartList");
+		}
+		else if(msgFlag.equals("cartInputOk")) {
+			model.addAttribute("msg", "장바구니에 상품이 등록되었습니다.\\n즐거운 쇼핑되세요.");
+			model.addAttribute("url", "dbShop/dbProductList");
+		}
+		else if(msgFlag.equals("cartEmpty")) {
+			model.addAttribute("msg", "장바구니가 비어있습니다.");
+			model.addAttribute("url", "dbShop/dbProductList");
+		}
+		else if(msgFlag.equals("paymentResultOk")) {
+			model.addAttribute("msg", "결제가 정상적으로 완료되었습니다.");
+			model.addAttribute("url", "dbShop/paymentResultOk");
+		}
 		
 		
 		return "include/message";

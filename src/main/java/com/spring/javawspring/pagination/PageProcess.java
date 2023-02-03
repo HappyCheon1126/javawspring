@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.spring.javawspring.dao.BoardDAO;
+import com.spring.javawspring.dao.DbShopDAO;
 import com.spring.javawspring.dao.GuestDAO;
 import com.spring.javawspring.dao.MemberDAO;
 import com.spring.javawspring.dao.PdsDAO;
@@ -25,6 +26,9 @@ public class PageProcess {
 	
 	@Autowired
 	WebMessageDAO webMessageDAO;
+	
+	@Autowired
+	DbShopDAO dbShopDAO;
 
 	public PageVO totRecCnt(int pag, int pageSize, String section, String part, String searchString) {
 		PageVO pageVO = new PageVO();
@@ -47,6 +51,20 @@ public class PageProcess {
 			String mid = part;
 			int mSw = Integer.parseInt(searchString);
 			totRecCnt = webMessageDAO.totRecCnt(mid, mSw);
+		}
+		else if(section.equals("dbMyOrder")) {
+			String mid = part;
+			totRecCnt = dbShopDAO.totRecCnt(mid);
+		}
+		else if(section.equals("myOrderStatus")) {
+			String mid = part;
+			// searchString = startJumun + "@" + endJumun + "@" + conditionOrderStatus;
+			String[] searchStringArr = searchString.split("@");
+			totRecCnt = dbShopDAO.totRecCntMyOrderStatus(mid,searchStringArr[0],searchStringArr[1],searchStringArr[2]);
+		}
+		else if(section.equals("adminDbOrderProcess")) {
+			String[] searchStringArr = searchString.split("@");
+			totRecCnt = dbShopDAO.totRecCntAdminStatus(searchStringArr[0],searchStringArr[1],searchStringArr[2]);
 		}
 		
 		

@@ -1,17 +1,38 @@
 package com.spring.javawspring;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.spring.javawspring.pagination.PageProcess;
+import com.spring.javawspring.pagination.PageVO;
 import com.spring.javawspring.service.DbShopService;
+import com.spring.javawspring.service.MemberService;
+import com.spring.javawspring.vo.DbBaesongVO;
+import com.spring.javawspring.vo.DbCartVO;
+import com.spring.javawspring.vo.DbOptionVO;
+import com.spring.javawspring.vo.DbOrderVO;
 import com.spring.javawspring.vo.DbProductVO;
+import com.spring.javawspring.vo.MemberVO;
+import com.spring.javawspring.vo.PayMentVO;
 
 @Controller
 @RequestMapping("/dbShop")
@@ -22,6 +43,9 @@ public class DbShopController {
 	
 	@Autowired
 	PageProcess pageProcess;
+	
+	@Autowired
+	MemberService memberService;
 	
 	// 대/중/소분류 폼 보기
 	@RequestMapping(value = "/dbCategory", method = RequestMethod.GET)
@@ -120,6 +144,470 @@ public class DbShopController {
 	@RequestMapping(value="/categoryMiddleName", method = RequestMethod.POST)
 	public List<DbProductVO> categoryMiddleNamePost(String categoryMainCode) {
 		return dbShopService.getCategoryMiddleName(categoryMainCode);
+	}
+	
+	// 상품 등록을 위한 등록폼 보여주기
+	@RequestMapping(value = "/dbProduct", method = RequestMethod.GET)
+	public String dbProducGet(Model model) {
+		List<DbProductVO> mainVos = dbShopService.getCategoryMain();
+		model.addAttribute("mainVos", mainVos);
+		return "admin/dbShop/dbProduct";
+	}
+	
+	// 중분류 선택시에 소분류항목들 가져오기
+	@ResponseBody
+	@RequestMapping(value = "/categorySubName", method = RequestMethod.POST)
+	public List<DbProductVO> categorySubNamePost(String categoryMainCode, String categoryMiddleCode) {
+		return dbShopService.getCategorySubName(categoryMainCode, categoryMiddleCode);
+	}
+	
+	// 소분류 선택시에 상품명(모델명) 가져오기
+	@ResponseBody
+	@RequestMapping(value = "/categoryProductName", method = RequestMethod.POST)
+	public List<DbProductVO> categoryProductNamePost(String categoryMainCode, String categoryMiddleCode, String categorySubCode) {
+		return dbShopService.getCategoryProductName(categoryMainCode, categoryMiddleCode, categorySubCode);
+	}
+	
+	// 관리자 상품등록시에 ckeditor에 그림을 올린다면 dbShop폴더에 저장되고, 저장된 파일을 브라우저 textarea상자에 보여준다. 
+	@ResponseBody
+	@RequestMapping("/imageUpload")
+	public void imageUploadGet(HttpServletRequest request, HttpServletResponse response, @RequestParam MultipartFile upload) throws Exception {
+		response.setCharacterEncoding("utf-8");
+		response.setContentType("text/html; charset=utf-8");
+		
+		String originalFilename = upload.getOriginalFilename();
+		
+		Date date = new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
+		originalFilename = sdf.format(date) + "_" + originalFilename;
+		
+		byte[] bytes = upload.getBytes();
+		
+		String uploadPath = request.getSession().getServletContext().getRealPath("/resources/data/dbShop/");
+		OutputStream outStr = new FileOutputStream(new File(uploadPath + originalFilename));
+		outStr.write(bytes);
+		
+		PrintWriter out = response.getWriter();
+		String fileUrl = request.getContextPath() + "/data/dbShop/" + originalFilename;
+		out.println("{\"originalFilename\":\""+originalFilename+"\",\"uploaded\":1,\"url\":\""+fileUrl+"\"}");
+		
+		out.flush();
+		outStr.close();
+	}
+	
+	// 상품 등록을 위한 등록시키기
+	@RequestMapping(value = "/dbProduct", method = RequestMethod.POST)
+	public String dbProducPost(MultipartFile file, DbProductVO vo) {
+		// 이미지파일 업로드시에 ckeditor폴더에서 product폴더로 복사작업처리....(dbShop폴더에서 'dbShop/product'로)
+		dbShopService.imgCheckProductInput(file, vo);
+		
+		return "redirect:/msg/dbProductInputOk";
+	}
+	
+	// 등록된 상품 모두 보여주기(관리자화면에서 보여주는 처리부분이다.) - 상품의 소분류명(subTitle)도 함께 출력시켜준다.
+	@RequestMapping(value = "/dbShopList", method = RequestMethod.GET)
+	public String dbShopListGet(Model model,
+			@RequestParam(name="part", defaultValue = "전체", required = false) String part) {
+		// 소분류명을 가져온다.
+		List<DbProductVO> subTitleVos = dbShopService.getSubTitle();
+		model.addAttribute("subTitleVos", subTitleVos);
+		model.addAttribute("part", part);
+		
+		// 전체 상품리스트 가져오기
+		List<DbProductVO> productVos = dbShopService.getDbShopList(part);
+		model.addAttribute("productVos", productVos);
+		
+		return "admin/dbShop/dbShopList";
+	}
+	
+	// 관리자에서 진열된 상품을 클릭하였을경우에 해당 상품의 상세내역 보여주기
+	@RequestMapping(value="/dbShopContent", method=RequestMethod.GET)
+	public String dbShopContentGet(Model model, int idx) {
+		DbProductVO productVo = dbShopService.getDbShopProduct(idx);	   // 1건의 상품 정보를 불러온다.
+		List<DbOptionVO> optionVos = dbShopService.getDbShopOption(idx); // 해당 상품의 모든 옵션 정보를 가져온다.
+		model.addAttribute("productVo", productVo);
+		model.addAttribute("optionVos", optionVos);
+		
+		return "admin/dbShop/dbShopContent";
+	}
+	
+	// 옵션 등록창 보여주기(관리자 왼쪽메뉴에서 선택시 처리)
+	@RequestMapping(value = "/dbOption", method = RequestMethod.GET)
+	public String dbOptionGet(Model model) {
+		List<DbProductVO> mainVos = dbShopService.getCategoryMain();
+		model.addAttribute("mainVos", mainVos);
+//		String[] productNames = dbShopService.getProductName();
+//		model.addAttribute("productNames", productNames);
+		
+		return "admin/dbShop/dbOption";
+	}
+	
+	// 옵션 등록창 보여주기(관리자 상품상세보기에서 호출시 처리)
+	@RequestMapping(value = "/dbOption2", method = RequestMethod.GET)
+	public String dbOption2Get(Model model, String productName) {
+		DbProductVO vo = dbShopService.getProductInfor(productName);
+		List<DbOptionVO> optionVos = dbShopService.getOptionList(vo.getIdx());
+		model.addAttribute("vo", vo);
+		model.addAttribute("optionVos", optionVos);
+		
+		return "admin/dbShop/dbOption2";
+	}
+	
+	// 옵션 등록후 다시 옵션 등록창 보여주기(옵션을 1개씩 등록할때는 사용하면 편리하나, 여러개를 동적폼으로 만들었을때는 aJax를 사용하지 못한다.
+	/*
+	@ResponseBody
+	@RequestMapping(value = "/dbOption2Input", method = RequestMethod.POST)
+	public String dbOption2InputGet(DbOptionVO vo) {
+		dbShopService.setDbOptionInput(vo);
+		return "";
+	}
+	*/
+	
+	// 옵션 등록창에서, 상품을 선택하면 선택된 상품의 상세설명을 가져와서 뿌리기
+	@ResponseBody
+	@RequestMapping(value="/getProductInfor", method = RequestMethod.POST)
+	public DbProductVO getProductInforPost(String productName) {
+		return dbShopService.getProductInfor(productName);
+	}
+	
+	// 옵션등록창에서 '옵셔보기'버튼클릭시에 해당 제품의 모든 옵션을 보여주기
+	@ResponseBody
+	@RequestMapping(value="/getOptionList", method = RequestMethod.POST)
+	public List<DbOptionVO> getOptionListPost(int productIdx) {
+		return dbShopService.getOptionList(productIdx);
+	}
+	
+	// 옵션 기록사항들을 등록하기
+	@RequestMapping(value="/dbOption", method=RequestMethod.POST)
+	public String dbOptionPost(Model model, DbOptionVO vo, String[] optionName, int[] optionPrice, String flag) {
+		for(int i=0; i<optionName.length; i++) {
+			
+			int optionCnt = dbShopService.getOptionSame(vo.getProductIdx(), optionName[i]);
+			if(optionCnt != 0) continue;
+			
+			// 동일한 옵션이 없으면 vo에 set시킨후 옵션테이블에 등록시킨다.
+			vo.setProductIdx(vo.getProductIdx());
+			vo.setOptionName(optionName[i]);
+			vo.setOptionPrice(optionPrice[i]);
+			
+			dbShopService.setDbOptionInput(vo);
+		}
+		if(!flag.equals("option2")) return "redirect:/msg/dbOptionInputOk";
+		else {
+			model.addAttribute("flag", vo.getProductName());
+			return "redirect:/msg/dbOptionInput2Ok";
+		}
+	}
+	
+	// 옵션 등록창에서 옵션리스트를 확인후 필요없는 옵션항목을 삭제처리..
+	@ResponseBody
+	@RequestMapping(value="/optionDelete", method = RequestMethod.POST)
+	public String optionDeletePost(int idx) {
+		dbShopService.setOptionDelete(idx);
+		return "";
+	}
+	
+  // 관리자에서 관리자가 주문 확인하기
+	@RequestMapping(value="/adminOrderStatus")
+	public String dbOrderProcessGet(Model model,
+    @RequestParam(name="startJumun", defaultValue="", required=false) String startJumun,
+    @RequestParam(name="endJumun", defaultValue="", required=false) String endJumun,
+    @RequestParam(name="orderStatus", defaultValue="전체", required=false) String orderStatus,
+    @RequestParam(name="pag", defaultValue="1", required=false) int pag,
+    @RequestParam(name="pageSize", defaultValue="5", required=false) int pageSize) {
+
+		List<DbBaesongVO> vos = null;
+		PageVO pageVo = null;
+		String strNow = "";
+		if(startJumun.equals("")) {
+			Date now = new Date();
+	    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+	    strNow = sdf.format(now);
+	    
+	    startJumun = strNow;
+	    endJumun = strNow;
+		}
+    
+    String strOrderStatus = startJumun + "@" + endJumun + "@" + orderStatus;
+    pageVo = pageProcess.totRecCnt(pag, pageSize, "adminDbOrderProcess", "", strOrderStatus);
+
+		vos = dbShopService.getAdminOrderStatus(pageVo.getStartIndexNo(), pageSize, startJumun, endJumun, orderStatus);
+	
+	  model.addAttribute("startJumun", startJumun);
+	  model.addAttribute("endJumun", endJumun);
+	  model.addAttribute("orderStatus", orderStatus);
+	  model.addAttribute("vos", vos);
+	  model.addAttribute("pageVo", pageVo);
+	
+	  return "admin/dbShop/dbOrderProcess";
+	}
+	
+	// 주문관리에서, 관리자가 주문상태를 변경처리하는것
+	@ResponseBody
+	@RequestMapping(value="/goodsStatus", method=RequestMethod.POST)
+	public String goodsStatusGet(String orderIdx, String orderStatus) {
+		dbShopService.setOrderStatusUpdate(orderIdx, orderStatus);
+		return "";
+	}  
+	
+	
+	
+	/* 아래로 사용자(고객)에서의 처리부분들~~~~ */
+	
+	// 등록된 상품 보여주기(사용자(고객)화면에서 보여주기)
+	@RequestMapping(value="/dbProductList", method = RequestMethod.GET)
+	public String dbProductListGet(
+			@RequestParam(name="part", defaultValue="전체", required=false) String part,
+			Model model) {
+		List<DbProductVO> subTitleVos = dbShopService.getSubTitle();
+		model.addAttribute("subTitleVos", subTitleVos);
+		model.addAttribute("part", part);
+		
+		List<DbProductVO> productVos = dbShopService.getDbShopList(part);
+		model.addAttribute("productVos", productVos);
+		return "dbShop/dbProductList";
+	}
+	
+  // 진열된 상품클릭시 해당상품의 상세정보 보여주기(사용자(고객)화면에서 보여주기)
+	@RequestMapping(value="/dbProductContent", method=RequestMethod.GET)
+	public String dbProductContentGet(int idx, Model model) {
+		DbProductVO productVo = dbShopService.getDbShopProduct(idx);			// 상품의 상세정보 불러오기
+		List<DbOptionVO> optionVos = dbShopService.getDbShopOption(idx);	// 옵션의 모든 정보 불러오기
+		
+		model.addAttribute("productVo", productVo);
+		model.addAttribute("optionVos", optionVos);
+		
+		return "dbShop/dbProductContent";
+	}
+	
+	// 상품상세정보보기창에서 '장바구니'버튼, '주문하기'버튼을 클릭하면 모두 이곳을 거쳐서 이동처리했다.
+	// '장바구니'버튼에서는 '다시쇼핑하기'처리했고, '주문하기'버튼에서는 '주문창'으로 보내도록 처리했다.
+	@RequestMapping(value="/dbProductContent", method=RequestMethod.POST)
+	public String dbProductContentPost(DbCartVO vo, HttpSession session, String flag) {
+		// DBCartVO(vo) : 사용자가 선택한 품목(기본품목+옵션)의 정보를 담고 있는 VO
+		// DBCartVO(resVo) : 사용자가 기존에 장바구니에 담아놓은적이 있는 품목(기본품목+옵션)의 정보를 담고 있는 VO
+		String mid = (String) session.getAttribute("sMid");
+		DbCartVO resVo = dbShopService.getDbCartProductOptionSearch(vo.getProductName(), vo.getOptionName(), mid);
+		if(resVo != null) {		// 기존에 구매한적이 있었다면 '현재 구매한 내역'과 '기존 장바구니의 수량'을 합쳐서 'Update'시켜줘야한다.
+			String[] voOptionNums = vo.getOptionNum().split(",");
+			String[] resOptionNums = resVo.getOptionNum().split(",");
+			int[] nums = new int[99];
+			String strNums = "";
+			for(int i=0; i<voOptionNums.length; i++) {
+				nums[i] += (Integer.parseInt(voOptionNums[i]) + Integer.parseInt(resOptionNums[i]));
+				strNums += nums[i];
+				if(i < nums.length - 1) strNums += ",";
+			}
+			vo.setOptionNum(strNums);
+			dbShopService.dbShopCartUpdate(vo);
+		}		// 처음 구매하는 제품이라면 장바구니에 insert시켜준다.
+		else {
+			dbShopService.dbShopCartInput(vo);
+		}
+		
+		if(flag.equals("order")) {
+			return "redirect:/msg/cartOrderOk";
+		}
+		else {
+			return "redirect:/msg/cartInputOk";
+		}
+	}
+	
+	// 장바구니에 담겨있는 모든 상품들의 내역을 보여주기-주문 전단계(장바구니는 DB에 들어있는 자료를 바로 불러와서 처리하면 된다.)
+	@RequestMapping(value="/dbCartList", method=RequestMethod.GET)
+	public String dbCartGet(HttpSession session, DbCartVO vo, Model model) {
+		String mid = (String) session.getAttribute("sMid");
+		List<DbCartVO> vos = dbShopService.getDbCartList(mid);
+		
+		if(vos.size() == 0) {
+			return "redirect:/msg/cartEmpty";
+		}
+		
+		model.addAttribute("cartListVos", vos);
+		return "dbShop/dbCartList";
+	}
+	
+	// 장바구니안에서 삭제시키고자 할 품목을 '삭제'버튼 눌렀을때 처리
+	@ResponseBody
+	@RequestMapping(value="/dbCartDelete", method=RequestMethod.POST)
+	public String dbCartDeleteGet(int idx) {
+		dbShopService.dbCartDelete(idx);
+		return "";
+	}
+	
+	// 카트에 담겨있는 품목들중에서, 주문한 품목들을 읽어와서 세션에 담아준다. 이때 고객의 정보도 함께 처리하며, 주문번호를 만들어서 다음단계인 '결재'로 넘겨준다.
+	@RequestMapping(value="/dbCartList", method=RequestMethod.POST)
+	public String dbCartListPost(HttpServletRequest request, Model model, HttpSession session,
+			@RequestParam(name="baesong", defaultValue = "0", required = false) int baesong) {
+		String mid = session.getAttribute("sMid").toString();
+		
+		// 주문한 상품에 대하여 '고유번호'를 만들어준다.
+		// 고유주문번호(idx) = 기존에 존재하는 주문테이블의 고유번호 + 1
+		DbOrderVO maxIdx = dbShopService.getOrderMaxIdx();
+		int idx = 1;
+		if(maxIdx != null) idx = maxIdx.getMaxIdx() + 1;
+		
+		Date today = new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+		String orderIdx = sdf.format(today) + idx;
+				
+		// 장바구니에서 구매를 위해 선택한 모든 항목들은 배열로 넘어온다.
+		String[] idxChecked = request.getParameterValues("idxChecked");
+		
+		DbCartVO cartVo = new DbCartVO();
+		List<DbOrderVO> orderVos = new ArrayList<DbOrderVO>();
+		
+		for(String strIdx : idxChecked) {
+			cartVo = dbShopService.getCartIdx(Integer.parseInt(strIdx));
+			DbOrderVO orderVo = new DbOrderVO();
+			orderVo.setProductIdx(cartVo.getProductIdx());
+			orderVo.setProductName(cartVo.getProductName());
+			orderVo.setMainPrice(cartVo.getMainPrice());
+			orderVo.setThumbImg(cartVo.getThumbImg());
+			orderVo.setOptionName(cartVo.getOptionName());
+			orderVo.setOptionPrice(cartVo.getOptionPrice());
+			orderVo.setOptionNum(cartVo.getOptionNum());
+			orderVo.setTotalPrice(cartVo.getTotalPrice());
+			orderVo.setCartIdx(cartVo.getIdx());
+			orderVo.setBaesong(baesong);
+			
+			orderVo.setOrderIdx(orderIdx);	// 관리자가 만들어준 '주문고유번호'를 저장
+			orderVo.setMid(mid);						// 로그인한 아이디를 저장한다.
+			
+			orderVos.add(orderVo);
+		}
+		session.setAttribute("sOrderVos", orderVos);
+		
+		// 배송처리를 위한 현재 로그인한 아이디에 해당하는 고객의 정보를 member2테이블에서 가져온다.
+		MemberVO memberVo = memberService.getMemberIdCheck(mid);
+		model.addAttribute("memberVo", memberVo);
+		
+		return "dbShop/dbOrder";
+	}
+
+  // 결제시스템(결제창 호출하기) - API이용
+	@RequestMapping(value="/payment", method=RequestMethod.POST)
+	public String paymentPost(DbOrderVO orderVo, PayMentVO payMentVo, DbBaesongVO baesongVo, HttpSession session, Model model) {
+		model.addAttribute("payMentVo", payMentVo);
+		
+		session.setAttribute("sPayMentVo", payMentVo);
+		session.setAttribute("sBaesongVo", baesongVo);
+		
+		return "dbShop/paymentOk";
+	}
+	
+  // 결제시스템 연습하기(결제창 호출후 결재 완료후에 처리하는 부분)
+	// 주문 완료후 주문내역을 '주문테이블(dbOrder)에 저장
+	// 주문이 완료되었기에 주문된 물품은 장바구니(dbCartList)에서 내역을 삭제처리한다.
+	// 사용한 세션은 제거시킨다.
+	// 작업처리후 오늘 구매한 상품들의 정보(구매품목,결제내역,배송지)들을 model에 담아서 확인창으로 넘겨준다.
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value="/paymentResult", method=RequestMethod.GET)
+	public String paymentResultGet(HttpSession session, PayMentVO receivePayMentVo, Model model) {
+		// 주문내역 dbOrder/dbBaesong 테이블에 저장하기(앞에서 저장했던 세션에서 가져왔다.)
+		List<DbOrderVO> orderVos = (List<DbOrderVO>) session.getAttribute("sOrderVos");
+		PayMentVO payMentVo = (PayMentVO) session.getAttribute("sPayMentVo");
+		DbBaesongVO baesongVo = (DbBaesongVO) session.getAttribute("sBaesongVo");
+		
+//		사용된 세션은 반환한다.
+//		session.removeAttribute("sOrderVos");  // 마지막 결재처리후에 결재결과창에서 확인하고 있기에 지우면 안됨
+		session.removeAttribute("sBaesongVo");
+		
+		for(DbOrderVO vo : orderVos) {
+			vo.setIdx(Integer.parseInt(vo.getOrderIdx().substring(8))); // 주문테이블에 고유번호를 셋팅한다.	
+			vo.setOrderIdx(vo.getOrderIdx());        				// 주문번호를 주문테이블의 주문번호필드에 지정처리한다.
+			vo.setMid(vo.getMid());							
+			
+			dbShopService.setDbOrder(vo);                 	// 주문내용을 주문테이블(dbOrder)에 저장.
+			dbShopService.dbCartDeleteAll(vo.getCartIdx()); // 주문이 완료되었기에 장바구니(dbCart)테이블에서 주문한 내역을 삭체처리한다.
+			
+		}
+		// 주문된 정보를 배송테이블에 담기위한 처리(기존 baesongVo에 담기지 않은 내역들을 담아주고 있다.)
+		baesongVo.setOIdx(orderVos.get(0).getIdx());
+		baesongVo.setOrderIdx(orderVos.get(0).getOrderIdx());
+		baesongVo.setAddress(payMentVo.getBuyer_addr());
+		baesongVo.setTel(payMentVo.getBuyer_tel());
+		
+		dbShopService.setDbBaesong(baesongVo);  // 배송내용을 배송테이블(dbBaesong)에 저장
+		dbShopService.setMemberPointPlus((int)(baesongVo.getOrderTotalPrice() * 0.01), orderVos.get(0).getMid());	// 회원테이블에 포인트 적립하기(1%)
+		
+		payMentVo.setImp_uid(receivePayMentVo.getImp_uid());
+		payMentVo.setMerchant_uid(receivePayMentVo.getMerchant_uid());
+		payMentVo.setPaid_amount(receivePayMentVo.getPaid_amount());
+		payMentVo.setApply_num(receivePayMentVo.getApply_num());
+		
+		// 오늘 주문에 들어간 정보들을 확인해주기위해 다시 session에 담아서 넘겨주고 있다.
+		session.setAttribute("sPayMentVo", payMentVo);
+		session.setAttribute("orderTotalPrice", baesongVo.getOrderTotalPrice());
+		
+		return "redirect:/msg/paymentResultOk";
+	}
+	
+	// 결재완료된 정보 보여주기
+	@SuppressWarnings({ "unchecked" })
+	@RequestMapping(value="/paymentResultOk", method=RequestMethod.GET)
+	public String paymentResultOkGet(HttpSession session, Model model) {
+		List<DbOrderVO> orderVos = (List<DbOrderVO>) session.getAttribute("sOrderVos");
+		model.addAttribute("orderVos", orderVos);
+		session.removeAttribute("sOrderVos");
+		return "dbShop/paymentResult";
+	}
+	
+	// 배송지 정보 보여주기
+	@RequestMapping(value="/dbOrderBaesong", method=RequestMethod.GET)
+	public String dbOrderBaesongGet(String orderIdx, Model model) {
+		
+		List<DbBaesongVO> vos = dbShopService.getOrderBaesong(orderIdx);  // 같은 주문번호가 2개 이상 있을수 있기에 List객체로 받아온다.
+		model.addAttribute("vo", vos.get(0));  // 같은 배송지면 0번째것 하나만 vo에 담아서 넘겨주면 된다.
+		
+		return "dbShop/dbOrderBaesong";
+	}
+	
+	// 현재 로그인 사용자가 주문내역 조회하기 폼 보여주기
+	@RequestMapping(value="/dbMyOrder", method=RequestMethod.GET)
+	public String dbMyOrderGet(HttpServletRequest request, HttpSession session, Model model,
+			@RequestParam(name="pag", defaultValue="1", required=false) int pag,
+			@RequestParam(name="pageSize", defaultValue="5", required=false) int pageSize) {
+		String mid = (String) session.getAttribute("sMid");
+		int level = (int) session.getAttribute("sLevel");
+		if(level == 0) mid = "전체";
+		
+		PageVO pageVo = pageProcess.totRecCnt(pag, pageSize, "dbMyOrder", mid, "");
+		
+		// 오늘 구매한 내역을 초기화면에 보여준다.
+		List<DbProductVO> vos = dbShopService.getMyOrderList(pageVo.getStartIndexNo(), pageSize, mid);
+		model.addAttribute("vos", vos);
+		model.addAttribute("pageVo",pageVo);
+		
+		return "dbShop/dbMyOrder";
+	}
+
+	// 날짜별 상태별 기존제품 구매한 주문내역 확인하기
+	@RequestMapping(value="/myOrderStatus", method=RequestMethod.GET)
+	public String myOrderStatusGet(
+			HttpServletRequest request, 
+			HttpSession session, 
+			String startJumun, 
+			String endJumun, 
+			@RequestParam(name="pag", defaultValue="1", required=false) int pag,
+			@RequestParam(name="pageSize", defaultValue="5", required=false) int pageSize,
+  	  @RequestParam(name="conditionOrderStatus", defaultValue="전체", required=false) String conditionOrderStatus,
+			Model model) {
+		String mid = (String) session.getAttribute("sMid");
+		int level = (int) session.getAttribute("sLevel");
+		
+		if(level == 0) mid = "전체";
+		String searchString = startJumun + "@" + endJumun + "@" + conditionOrderStatus;
+		PageVO pageVo = pageProcess.totRecCnt(pag, pageSize, "myOrderStatus", mid, searchString);  // 4번째인자에 '아이디/조건'(을)를 넘겨서 part를 아이디로 검색처리하게 한다.
+		
+		List<DbBaesongVO> vos = dbShopService.getMyOrderStatus(pageVo.getStartIndexNo(), pageSize, mid, startJumun, endJumun, conditionOrderStatus);
+		model.addAttribute("vos", vos);				
+		model.addAttribute("startJumun", startJumun);
+		model.addAttribute("endJumun", endJumun);
+		model.addAttribute("conditionOrderStatus", conditionOrderStatus);
+		model.addAttribute("pageVo", pageVo);
+		
+		return "dbShop/dbMyOrder";
 	}
 	
 }
