@@ -58,6 +58,7 @@
 			<mapping path="/member/**"/>
 			<mapping path="/webMessage/**"/>
 			<mapping path="/board/boardList"/>
+			<mapping path="/webSocket/**"/>
 			<exclude-mapping path="/member/memberLogin"/>
 			<exclude-mapping path="/member/memberLogout"/>
 			<exclude-mapping path="/member/memberJoin"/>

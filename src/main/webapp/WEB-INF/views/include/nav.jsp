@@ -2,6 +2,12 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <c:set var="ctp" value="${pageContext.request.contextPath}"/>
 <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+<script>
+  function newChat() {
+	  let url = "${ctp}/webSocket/chat";
+	  window.open(url,"newChat","width=450px,height=580px");
+  }
+</script>
 <!-- Navbar -->
 <div class="w3-top">
   <div class="w3-bar w3-black w3-card">
@@ -52,6 +58,10 @@
 	        <a href="${ctp}/member/memberMain" class="w3-bar-item w3-button">회원메인화면</a>
 	        <a href="${ctp}/schedule/schedule" class="w3-bar-item w3-button">일정관리</a>
 	        <a href="${ctp}/webMessage/webMessage?mSw=1" class="w3-bar-item w3-button">웹메세지</a>
+	        <a href="${ctp}/webSocket" class="w3-bar-item w3-button">웹소켓채팅</a>
+	        <a href="${ctp}/webSocketDb" class="w3-bar-item w3-button">웹소켓DB채팅</a>
+	        <%-- <a href="${ctp}/webSocket/chat" class="w3-bar-item w3-button">채팅창띄우기</a> --%>
+	        <a href="javascript:newChat()" class="w3-bar-item w3-button">채팅창띄우기</a>
 	        <a href="${ctp}/member/memberList" class="w3-bar-item w3-button">회원리스트</a>
 	        <a href="${ctp}/member/memberPwdUpdate?flag=pwdCheck" class="w3-bar-item w3-button">회원정보수정</a>
 	        <a href="${ctp}/member/memberPwdUpdate" class="w3-bar-item w3-button">비밀번호수정</a>

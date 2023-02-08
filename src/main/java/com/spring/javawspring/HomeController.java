@@ -12,6 +12,7 @@ import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,4 +70,20 @@ public class HomeController {
 		out.flush();
 		os.close();
 	}
+	
+	@RequestMapping(value = "/webSocket", method = RequestMethod.GET)
+	public String webSocketGet(HttpServletRequest req, HttpServletResponse resp, HttpSession session) {
+		return "webSocket/webSocket";
+	}
+	
+	@RequestMapping(value = "/webSocket/chat", method = RequestMethod.GET)
+	public String chatGet(HttpServletRequest req, HttpServletResponse resp, HttpSession session) {
+		return "webSocket/chat";
+	}
+	
+	@RequestMapping(value = "/webSocketDb", method = RequestMethod.GET)
+	public String webSocketDbGet(HttpServletRequest req, HttpServletResponse resp, HttpSession session) {
+		return "webSocket/webSocketDb";
+	}
+	
 }
