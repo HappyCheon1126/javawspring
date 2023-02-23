@@ -13,7 +13,9 @@ public class MessageController {
 	@RequestMapping(value="/msg/{msgFlag}", method=RequestMethod.GET)
 	public String msgGet(@PathVariable String msgFlag, Model model,
 			@RequestParam(value="mid", defaultValue = "", required = false) String mid,
-			@RequestParam(value="flag", defaultValue = "", required = false) String flag) {
+			@RequestParam(value="flag", defaultValue = "", required = false) String flag,
+			@RequestParam(value="idx", defaultValue = "0", required = false) int idx,
+			@RequestParam(value="pag", defaultValue = "1", required = false) int pag) {
 		
 		if(msgFlag.equals("memberLoginOk")) {
 			model.addAttribute("msg", mid + "님 로그인 되었습니다.");
@@ -163,6 +165,43 @@ public class MessageController {
 			model.addAttribute("msg", "결제가 정상적으로 완료되었습니다.");
 			model.addAttribute("url", "dbShop/paymentResultOk");
 		}
+		else if(msgFlag.equals("thumbnailCreateOk")) {
+			model.addAttribute("msg", "썸네일 이미지가 저장되었습니다.");
+			model.addAttribute("url", "study/thumbnailResult");
+		}
+		else if(msgFlag.equals("notifyInputOk")) {
+			model.addAttribute("msg", "공지사항이 저장되었습니다.");
+			model.addAttribute("url", "notify/notifyList");
+		}
+		else if(msgFlag.equals("notifyUpdateOk")) {
+			model.addAttribute("msg", "공지사항이 수정되었습니다.");
+			model.addAttribute("url", "notify/notifyList");
+		}
+		else if(msgFlag.equals("midSameSearch")) {
+			model.addAttribute("msg", "같은 아이디가 존재하기에 로그인할 수 없습니다.\\n신규회원 가입후 로그인하세요.");
+			model.addAttribute("url", "member/memberLogin");
+		}
+		else if(msgFlag.equals("midSameSearch")) {
+			model.addAttribute("msg", "같은 아이디가 존재하기에 로그인할 수 없습니다.\\n신규회원 가입후 로그인하세요.");
+			model.addAttribute("url", "member/memberLogin");
+		}
+		else if(msgFlag.equals("inquiryInputOk")) {
+			model.addAttribute("msg", "1:1 문의사항이 등록되었습니다.");
+			model.addAttribute("url", "inquiry/inquiryList");
+		}
+		else if(msgFlag.equals("inquiryUpdateOk")) {
+			model.addAttribute("msg", "1:1 문의사항이 수정되었습니다.");
+			model.addAttribute("url", "inquiry/inquiryView?idx="+idx);
+		}
+		else if(msgFlag.equals("inquiryDeleteOk")) {
+			model.addAttribute("msg", "1:1 문의사항이 삭제되었습니다.");
+			model.addAttribute("url", "inquiry/inquiryList?pag="+pag);
+		}
+		else if(msgFlag.equals("adInquiryDeleteOk")) {
+			model.addAttribute("msg", "1:1 문의글과 답변글이 삭제되었습니다.");
+			model.addAttribute("url", "admin/adInquiryList?pag="+pag);
+		}
+
 		
 		
 		return "include/message";

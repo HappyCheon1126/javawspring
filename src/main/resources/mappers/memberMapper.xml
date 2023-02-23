@@ -81,4 +81,8 @@
   	insert into member2 values (default,#{mid},#{pwd},#{nickName},'','남자',now(),'010- - ','/ / / /',#{email},'http://','기타','기타',default,'',default,default,default,default,default,default,default,default);
   </insert>
   
+  <insert id="setNaverMemberInputOk">
+  	insert into member2 values (default,#{mid},#{pwd},#{nickName},#{name},'남자',now(),'010- - ','/ / / /',#{email},'http://','기타','기타',default,'',default,default,default,default,default,default,default,default);
+  </insert>
+  
 </mapper>

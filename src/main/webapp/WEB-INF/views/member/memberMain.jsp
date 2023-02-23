@@ -18,6 +18,8 @@
   <hr/>
   <div id="memberInfo1" class="mr-5">
 	  <p><font color="blue"><b>${sNickName}</b></font>님 로그인 중이십니다.</p>
+	  <c:set var='login' value='${empty sLogin ? "일반계정" : sLogin}'/>
+	  <p>회원님은 <font color='orange'>${login}</font> (으)로 로그인 하셨군요.</p>
 	  <p>현재 <font color="blue"><b>${sStrLevel}</b></font> 등급 이십니다.</p>
 	  <c:if test="${!empty sImsiPwd}">
 		  <hr/>

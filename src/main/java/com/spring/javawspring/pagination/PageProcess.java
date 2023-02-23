@@ -3,9 +3,11 @@ package com.spring.javawspring.pagination;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.spring.javawspring.dao.AdminDAO;
 import com.spring.javawspring.dao.BoardDAO;
 import com.spring.javawspring.dao.DbShopDAO;
 import com.spring.javawspring.dao.GuestDAO;
+import com.spring.javawspring.dao.InquiryDAO;
 import com.spring.javawspring.dao.MemberDAO;
 import com.spring.javawspring.dao.PdsDAO;
 import com.spring.javawspring.dao.WebMessageDAO;
@@ -29,6 +31,12 @@ public class PageProcess {
 	
 	@Autowired
 	DbShopDAO dbShopDAO;
+	
+	@Autowired
+	InquiryDAO inquiryDAO;
+	
+	@Autowired
+	AdminDAO adminDAO;
 
 	public PageVO totRecCnt(int pag, int pageSize, String section, String part, String searchString) {
 		PageVO pageVO = new PageVO();
@@ -65,6 +73,12 @@ public class PageProcess {
 		else if(section.equals("adminDbOrderProcess")) {
 			String[] searchStringArr = searchString.split("@");
 			totRecCnt = dbShopDAO.totRecCntAdminStatus(searchStringArr[0],searchStringArr[1],searchStringArr[2]);
+		}
+		else if(section.equals("inquiry")) {
+			totRecCnt = inquiryDAO.totRecCnt(part, searchString);
+		}
+		else if(section.equals("adminInquiry")) {
+			totRecCnt = adminDAO.totRecCntAdmin(part);
 		}
 		
 		

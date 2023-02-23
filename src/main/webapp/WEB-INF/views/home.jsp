@@ -10,14 +10,45 @@
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	<script>
+	  function popupCheck() {
+		  <c:forEach var="popup" items="${popupVos}"> /* home컨트롤러에서 popupSw가 'Y'인 자료만 보내준다. */
+		  	var url = "${ctp}/notify/popup?idx=${popup.idx}";
+		  	openPopup(url,${popup.idx});
+		  </c:forEach>
+	  }
+	  
+	  var xPos = 0;
+	  function openPopup(url,idx) {		
+		  xPos += 100;
+		  var cookieCheck = getCookie("popupYN"+idx);
+		  if(cookieCheck != "N") {
+		  	window.open(url,"","width=400,height=600,left="+xPos+",top=5");
+		  }
+	  }
+	 
+	  
+	  // 쿠키값으로 처리하려다가 popupSw가 'Y'인 자료만 출력했다.
+	  function getCookie(name) {
+		  var cookie = document.cookie;  // 클라이언트에 저장된 쿠키의 정보를 읽어(가져)온다.
+		  if(cookie != "") {
+			  var cookieArray = cookie.split("; ");
+			  for(var index in cookieArray) {
+				  var cookieName = cookieArray[index].split("=");
+				  if(cookieName[0] == name) {
+					  return cookieName[1];
+				  }
+			  }
+		  }
+		  return;
+	  }
 	  
 	</script>
 	<style>
-	body {font-family: "Lato", sans-serif}
-	.mySlides {display: none}
+		body {font-family: "Lato", sans-serif}
+		.mySlides {display: none}
 	</style>
 </head>
-<body>
+<body onload="javascript:popupCheck()">
 <!-- 메뉴바 -->
 <jsp:include page="/WEB-INF/views/include/nav.jsp" />
 

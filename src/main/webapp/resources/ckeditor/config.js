@@ -8,6 +8,10 @@ CKEDITOR.editorConfig = function( config ) {
 	// For complete reference see:
 	// https://ckeditor.com/docs/ckeditor4/latest/api/CKEDITOR_config.html
 
+	CKEDITOR.dtd.$removeEmpty['i'] = false;		// 폰트어썸이나 xeicon을 사용할때 i태그가 지워지는걸 방지
+	config.enterMode = CKEDITOR.ENTER_BR;			// 줄바꿈을 p태그로 처리하는데, 이것을 br태그로 변경
+	config.fillEmptyBlocks = false;						// 줄바꿈시 자동 추가되는 p태그나 공백이 없는 p태그를 수동으로 입력할때 에디터가 자동으로 공백문자를 추가하는데, 이게 싫을때 사용
+
 	// The toolbar groups arrangement, optimized for two toolbar rows.
 	config.toolbarGroups = [
 		{ name: 'clipboard',   groups: [ 'clipboard', 'undo' ] },

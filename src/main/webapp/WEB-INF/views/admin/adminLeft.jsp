@@ -49,7 +49,7 @@
         <div class="panel-body pt-2 pb-2"><a href="${ctp}/dbShop/dbShopList" target="adminContent">상품등록조회</a></div>
         <div class="panel-body pt-2 pb-2"><a href="${ctp}/dbShop/dbOption" target="adminContent">옵션등록관리</a></div>
         <div class="panel-body pt-2 pb-2"><a href="${ctp}/dbShop/adminOrderStatus" target="adminContent">주문관리</a></div>
-        <div class="panel-body pt-2 pb-2"><a href="${ctp}/" target="adminContent">1:1문의</a></div>
+        <div class="panel-body pt-2 pb-2"><a href="${ctp}/admin/adInquiryList" target="adminContent">1:1문의</a></div>
       </div>
     </div>
     <div class="panel panel-default bg-light">
@@ -60,7 +60,7 @@
       </div>
       <div id="collapse3" class="panel-collapse collapse">
         <div class="panel-body pt-2 pb-2"><a href="${ctp}/admin/member/adminMemberList" target="adminContent">회원리스트</a></div>
-        <div class="panel-body pt-2 pb-2"><a href="${ctp}/" target="adminContent">공지사항관리</a></div>
+        <div class="panel-body pt-2 pb-2"><a href="${ctp}/notify/notifyList" target="adminContent">공지사항관리</a></div>
         <div class="panel-body pt-2 pb-2"><a href="${ctp}/" target="adminContent">사이트분석</a></div>
         <div class="panel-body pt-2 pb-2"><a href="${ctp}/admin/file/fileList" target="adminContent">임시파일관리</a></div>
       </div>

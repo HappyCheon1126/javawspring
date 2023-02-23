@@ -36,4 +36,6 @@ public interface MemberDAO {
 
 	public void setMemberUserDelCheck(@Param("mid") String mid);
 
+	public void setNaverMemberInputOk(@Param("mid") String mid, @Param("pwd") String pwd, @Param("nickName") String nickName, @Param("email") String email, @Param("name") String name);
+
 }

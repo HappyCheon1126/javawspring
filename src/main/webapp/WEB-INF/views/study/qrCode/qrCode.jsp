@@ -72,12 +72,18 @@
 				alert("아이디/이메일주소 입력 및 영화명과 상영일자와 상영시간을 모두 선택하셔야 합니다.");
 				return false;
 			}
-    	let moveUrl = "아이디 : " + mid + " , ";
-    	moveUrl += "이메일 : " + email + " , ";
-  		moveUrl += "영화제목 : " + movieName + " , ";
-  		moveUrl += "상영일자 : " + movieDate + " , ";
-  		moveUrl += "상영시작시간 : " + movieTime + " , ";
-  		moveUrl += "성인 : " + myform.movieAdult.value + "매 , ";
+			else {
+				let now = new Date();
+				let strNow = now.getFullYear() + '-' + (now.getMonth()+1) + '-' + now.getDate();
+				alert(strNow);
+				return false;
+			}
+    	let moveUrl = "아이디 : " + mid + ",\n";
+    	moveUrl += "이메일 : " + email + ",\n";
+  		moveUrl += "영화제목 : " + movieName + ",\n";
+  		moveUrl += "상영일자 : " + movieDate + ",\n";
+  		moveUrl += "상영시작시간 : " + movieTime + ",\n";
+  		moveUrl += "성인 : " + myform.movieAdult.value + "매,\n";
   		moveUrl += "어린이 : " + myform.movieChild.value + "매";
     	
     	$.ajax({
@@ -159,7 +165,8 @@
 			      	<option value="더 퍼스트 슬램덩크">더 퍼스트 슬램덩크</option>
 			      </select>
 	        </td>
-	        <td>
+	        <td class="text-center">
+	          <!-- 
 			      <select name="movieDate" class="form-control">
 			      	<option value="">상영일자선택</option>
 			      	<option value="2023-01-17">2023-01-17</option>
@@ -167,6 +174,12 @@
 			      	<option value="2023-01-17">2023-01-18</option>
 			      	<option value="2023-01-17">2023-01-19</option>
 			      </select>
+			       -->
+			      <div class="row">
+				      <div class="col text-right form-control" style="border:0px">상영일자선택</div>
+				      <div><input type="date" name="movieDate" value="<%=java.time.LocalDate.now() %>" class="form-control"/></div>
+				      <div class="col"></div>
+			      </div>
 	        </td>
 	        <td>
 			      <select name="movieTime" class="form-control">
@@ -180,8 +193,8 @@
         </tr>
 	      <tr>
 	        <td class="text-center">인원수</td>
-	        <td>성인 <input type="number" name="movieAdult" value="1" class="form-control" /></td>
-	      	<td>어린이 <input type="number" name="movieChild" value="0" class="form-control" /></td>
+	        <td>성인 <input type="number" name="movieAdult" value="1" min="1" class="form-control" /></td>
+	      	<td>어린이 <input type="number" name="movieChild" value="0" min="0" class="form-control" /></td>
 	      </tr>
 	      <tr>
 	        <td colspan="3" class="text-center">

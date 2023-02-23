@@ -26,6 +26,8 @@
 	<resources mapping="/ckeditor/**" location="/resources/ckeditor/" />
 	<resources mapping="/data/**" location="/resources/data/" />
 	<resources mapping="/dbShop/**" location="/resources/data/dbShop/" />
+	<resources mapping="/thumbnail/**" location="/resources/data/thumbnail/" />
+	<resources mapping="/inquiry/**" location="/resources/data/inquiry/" />
 
 	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
 	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
@@ -52,6 +54,7 @@
 	<interceptors>
 		<interceptor>
 			<mapping path="/admin/**"/>
+			<exclude-mapping path="/memberNavercallback/**"/>
 			<beans:ref bean="level0Interceptor" />
 		</interceptor>
 		<interceptor>
@@ -60,6 +63,9 @@
 			<mapping path="/board/boardList"/>
 			<mapping path="/webSocket/**"/>
 			<exclude-mapping path="/member/memberLogin"/>
+			<exclude-mapping path="/member/memberLoginNew"/>
+			<exclude-mapping path="/member/memberGoogleLogin"/>
+			<exclude-mapping path="/member/memberNaverLogin"/>
 			<exclude-mapping path="/member/memberLogout"/>
 			<exclude-mapping path="/member/memberJoin"/>
 			<exclude-mapping path="/member/memberIdCheck"/>
@@ -67,17 +73,20 @@
 			<exclude-mapping path="/member/memberList"/>
 			<exclude-mapping path="/member/memberPwdSearch"/>
 			<exclude-mapping path="/member/memberKakaoLogin"/>
+			<exclude-mapping path="/memberNavercallback/**"/>
 			<beans:ref bean="level4Interceptor" />
 		</interceptor>
 		<interceptor>
 			<mapping path="/study/**"/>
 			<mapping path="/board/**"/>
 			<mapping path="/dbShop/**"/>
+			<mapping path="/inquiry/**"/>
 			<mapping path="/member/memberList"/>
 			<mapping path="/pds/pdsList"/>
 			<mapping path="/pds/pdsTotalDown"/>
 			<mapping path="/pds/pdsDownAction"/>
 			<exclude-mapping path="/board/boardList"/>
+			<exclude-mapping path="/memberNavercallback/**"/>
 			<!-- <exclude-mapping path="/pds/pdsInput"/> -->
 			<beans:ref bean="level3Interceptor" />
 		</interceptor>
@@ -86,6 +95,7 @@
 			<exclude-mapping path="/pds/pdsList"/>
 			<exclude-mapping path="/pds/pdsTotalDown"/>
 			<exclude-mapping path="/pds/pdsDownAction"/>
+			<exclude-mapping path="/memberNavercallback/**"/>
 			<beans:ref bean="level2Interceptor" />
 		</interceptor>
 	</interceptors>

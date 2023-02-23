@@ -1,6 +1,7 @@
 package com.spring.javawspring;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,8 +18,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.spring.javawspring.pagination.PageProcess;
 import com.spring.javawspring.pagination.PageVO;
 import com.spring.javawspring.service.AdminService;
+import com.spring.javawspring.service.InquiryService;
 import com.spring.javawspring.service.MemberService;
+import com.spring.javawspring.vo.InquiryReplyVO;
+import com.spring.javawspring.vo.InquiryVO;
 import com.spring.javawspring.vo.MemberVO;
+import com.spring.javawspring.vo.QrCodeVO;
 
 @Controller
 @RequestMapping("/admin")
@@ -35,6 +40,10 @@ public class AdminController {
 	
 	@Autowired
 	MemberService memberService;
+	
+	@Autowired
+	InquiryService inquiryService;
+	
 	
 	@RequestMapping(value = "/adminMain", method=RequestMethod.GET)
 	public String adminMainGet() {
@@ -107,6 +116,76 @@ public class AdminController {
 		}
 		
 		return "1";
+	}
+	
+  // 관리자 1:1 리스트 보여주기
+	@RequestMapping(value="/adInquiryList", method = RequestMethod.GET)
+	public String adInquiryListGet(
+			@RequestParam(name="part", defaultValue="전체", required=false) String part,
+			@RequestParam(name="pag", defaultValue="1", required=false) int pag,
+	    @RequestParam(name="pageSize", defaultValue="5", required=false) int pageSize,
+			Model model) {
+		PageVO pageVo = pageProcess.totRecCnt(pag, pageSize, "adminInquiry", part, "");
+		
+    ArrayList<QrCodeVO> vos = adminService.getInquiryListAdmin(pageVo.getStartIndexNo(), pageSize, part);
+    
+    model.addAttribute("vos", vos);
+	  model.addAttribute("pageVo", pageVo);
+	  model.addAttribute("part", part);
+		
+		return "admin/inquiry/adInquiryList";
+	}
+	
+	// 관리자 답변달기 폼 보여주기(관리자가 답변글 수정/삭제처리하였을때도 함께 처리하고 있다.)
+	@RequestMapping(value="/adInquiryReply", method = RequestMethod.GET)
+	public String adInquiryReplyGet(int idx,
+			@RequestParam(name="part", defaultValue="전체", required=false) String part,
+			@RequestParam(name="pag", defaultValue="1", required=false) int pag,
+	    @RequestParam(name="pageSize", defaultValue="5", required=false) int pageSize,
+			Model model) {
+		InquiryVO vo = adminService.getInquiryContent(idx);
+		InquiryReplyVO reVo = adminService.getInquiryReplyContent(idx);
+		model.addAttribute("part", part);
+		model.addAttribute("pag", pag);
+		model.addAttribute("vo", vo);
+		model.addAttribute("reVo", reVo);
+		return "admin/inquiry/adInquiryReply";
+	}
+	
+	// 관리자 답변달기 저장하기
+	@ResponseBody
+	@RequestMapping(value="/adInquiryReplyInput", method = RequestMethod.POST)
+	public String adInquiryReplyInputPost(InquiryReplyVO vo, Model model) {
+		adminService.setInquiryInputAdmin(vo);
+		adminService.setInquiryUpdateAdmin(vo.getInquiryIdx());
+		
+		return "admin/inquiry/adInquiryReply";
+	}
+	
+	// 관리자 답변글 수정처리
+	@ResponseBody
+	@RequestMapping(value="/adInquiryReplyUpdate", method = RequestMethod.POST)
+	public String adInquiryReplyUpdatePost(InquiryReplyVO reVo) {
+		adminService.setInquiryReplyUpdate(reVo);	// 관리자가 답변글을 수정했을때 처리루틴
+		return "";
+	}
+	
+	// 관리자 답변글 삭제처리
+	@ResponseBody
+	@RequestMapping(value="/adInquiryReplyDelete", method = RequestMethod.POST)
+	public String adInquiryReplyDeletePost(int reIdx, int inquiryIdx) {
+		adminService.setInquiryReplyDelete(reIdx);	// 관리자가 답변글을 삭제했을때 처리루틴
+		adminService.setInquiryUpdateAdmin2(inquiryIdx);
+		return "";
+	}
+	
+	// 관리자 원본글과 답변글 삭제처리
+	@RequestMapping(value="/adInquiryDelete", method = RequestMethod.GET)
+	public String adInquiryDeleteGet(Model model, int idx, String fSName, int reIdx, int pag) {
+		adminService.setInquiryReplyDelete(reIdx);	// 관리자가 답변글을 삭제했을때 처리루틴
+		inquiryService.setInquiryDelete(idx, fSName);
+		model.addAttribute("pag", pag);
+		return "redirect:/msg/adInquiryDeleteOk";
 	}
 	
 }

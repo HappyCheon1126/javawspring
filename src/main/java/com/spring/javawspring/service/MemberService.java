@@ -36,4 +36,6 @@ public interface MemberService {
 
 	public void setMemberUserDelCheck(String mid);
 
+	public void setNaverMemberInputOk(String mid, String pwd, String nickName, String email, String name);
+
 }

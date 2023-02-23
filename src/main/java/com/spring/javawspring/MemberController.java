@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.spring.javawspring.pagination.PageProcess;
 import com.spring.javawspring.pagination.PageVO;
 import com.spring.javawspring.service.MemberService;
+import com.spring.javawspring.vo.LoginVO;
 import com.spring.javawspring.vo.MemberVO;
 
 @Controller
@@ -48,13 +49,21 @@ public class MemberController {
 	public String memberLoginGet(HttpServletRequest request) {
 		// 로그인폼 호출시에 기존에 저장된 쿠키가 있다면 불러와서 mid에 담아서 넘겨준다.
 		Cookie[] cookies = request.getCookies();
-		for(int i=0; i<cookies.length; i++) {
-			if(cookies[i].getName().equals("cMid")) {
-				request.setAttribute("mid", cookies[i].getValue());
-				break;
+		if(cookies != null) {
+			for(int i=0; i<cookies.length; i++) {
+				if(cookies[i].getName().equals("cMid")) {
+					request.setAttribute("mid", cookies[i].getValue());
+					break;
+				}
 			}
 		}
 		return "member/memberLogin";
+	}
+	
+	@RequestMapping(value = "/memberNavercallback")
+	public String naverLogin() {
+		
+		return "member/memberNavercallback";
 	}
 	
 	
@@ -64,6 +73,8 @@ public class MemberController {
 			String nickName,
 			String email) {
 		
+		session.setAttribute("sLogin", "kakao");
+		
 		// 카카오로그인한 회원이 현재 우리 회원인지를 조회한다.
 		// 이미 가입된 회원이라면 서비스를 사용하게 하고, 그렇지 않으면 강제로 회원 가입시킨다.
 		MemberVO vo = memberService.getMemberNickNameEmailCheck(nickName, email);
@@ -72,6 +83,10 @@ public class MemberController {
 		if(vo == null) {
 			// 아이디 결정하기
 			String mid = email.substring(0, email.indexOf("@"));
+			
+			// 같은 아이디가 존재하면 가입할 수 없도록 처리했다.
+			MemberVO vo2 = memberService.getMemberIdCheck(mid);
+			if(vo2 != null) return "redirect:/msg/midSameSearch";
 			
 			// 임시 비밀번호 발급하기(UUID 8자리로 발급하기로 한다. -> 발급후 암호화시켜 DB에 저장)
 			UUID uid = UUID.randomUUID();
@@ -89,6 +104,138 @@ public class MemberController {
 			vo = memberService.getMemberIdCheck(mid);
 		}
 		// 만약에 탈퇴신청한 회원이 카카오로그인처리하였다라면 'userDel'필드를 'NO'로 업데이트한다.
+		if(!vo.getUserDel().equals("NO")) {
+			memberService.setMemberUserDelCheck(vo.getMid());
+		}
+		
+		// 회원 인증처리된 경우 수행할 내용? strLevel처리, session에 필요한 자료를 저장, 쿠키값처리, 그날 방문자수 1 증가(방문포인트도 증가), ..
+		String strLevel = "";
+		if(vo.getLevel() == 0) strLevel = "관리자";
+		else if(vo.getLevel() == 1) strLevel = "운영자";
+		else if(vo.getLevel() == 2) strLevel = "우수회원";
+		else if(vo.getLevel() == 3) strLevel = "정회원";
+		else if(vo.getLevel() == 4) strLevel = "준회원";
+		
+		session.setAttribute("sLevel", vo.getLevel());
+		session.setAttribute("sStrLevel", strLevel);
+		session.setAttribute("sMid", vo.getMid());
+		session.setAttribute("sNickName", vo.getNickName());
+		
+		// 로그인한 사용자의 오늘 방문횟수(포인트) 누적...
+		memberService.setMemberVisitProcess(vo);
+		
+		return "redirect:/msg/memberLoginOk?mid="+vo.getMid();
+	}
+	
+	// 구글 로그인 완료후 수행할 내용들을 기술한다.
+	@RequestMapping(value="/memberGoogleLogin", method=RequestMethod.GET)
+	public String memberGoogleLoginGet(HttpSession session, HttpServletRequest request, HttpServletResponse response,
+			String nickName,
+			String email) {
+		session.setAttribute("sLogin", "google");		// 구글 로그인됨을 세션에 담아준다.
+		// 구글로그인한 회원이 현재 우리 회원인지를 조회한다.
+		// 이미 가입된 회원이라면 서비스를 사용하게 하고, 그렇지 않으면 강제로 회원 가입시킨다.
+		MemberVO vo = memberService.getMemberNickNameEmailCheck(nickName, email);
+		
+		// 현재 우리회원이 아니면 자동회원가입처리..(가입필수사항: 아이디,닉네임,이메일) - 아이디는 이메일주소의 '@'앞쪽 이름을 사용하기로 한다.
+		if(vo == null) {
+			// 아이디 결정하기
+			String mid = email.substring(0, email.indexOf("@"));
+			
+		  // 같은 아이디가 존재하면 가입할 수 없도록 처리했다.
+			MemberVO vo2 = memberService.getMemberIdCheck(mid);
+			if(vo2 != null) return "redirect:/msg/midSameSearch";
+			
+			// 임시 비밀번호 발급하기(UUID 8자리로 발급하기로 한다. -> 발급후 암호화시켜 DB에 저장)
+			UUID uid = UUID.randomUUID();
+			String pwd = uid.toString().substring(0,8);
+			session.setAttribute("sImsiPwd", pwd);	// 임시비밀번호를 발급하여 로그인후 변경처리하도록 한다.
+			pwd = passwordEncoder.encode(pwd);
+			
+			// 새로 발급된 임시비밀번호를 메일로 전송처리한다.
+			//  메일 처리부분... 생략함.
+			
+			// 자동 회원 가입처리한다.
+			memberService.setKakaoMemberInputOk(mid, pwd, nickName, email);
+			
+			// 가입 처리된 회원의 정보를 다시 읽어와서 vo에 담아준다.
+			vo = memberService.getMemberIdCheck(mid);
+		}
+		// 만약에 탈퇴신청한 회원이 카카오로그인처리하였다라면 'userDel'필드를 'NO'로 업데이트한다.
+		if(!vo.getUserDel().equals("NO")) {
+			memberService.setMemberUserDelCheck(vo.getMid());
+		}
+		
+		// 회원 인증처리된 경우 수행할 내용? strLevel처리, session에 필요한 자료를 저장, 쿠키값처리, 그날 방문자수 1 증가(방문포인트도 증가), ..
+		String strLevel = "";
+		if(vo.getLevel() == 0) strLevel = "관리자";
+		else if(vo.getLevel() == 1) strLevel = "운영자";
+		else if(vo.getLevel() == 2) strLevel = "우수회원";
+		else if(vo.getLevel() == 3) strLevel = "정회원";
+		else if(vo.getLevel() == 4) strLevel = "준회원";
+		
+		session.setAttribute("sLevel", vo.getLevel());
+		session.setAttribute("sStrLevel", strLevel);
+		session.setAttribute("sMid", vo.getMid());
+		session.setAttribute("sNickName", vo.getNickName());
+		
+		// 로그인한 사용자의 오늘 방문횟수(포인트) 누적...
+		memberService.setMemberVisitProcess(vo);
+		
+		return "redirect:/msg/memberLoginOk?mid="+vo.getMid();
+	}
+	
+	// 네이버 로그인 인증후 돌려받은 값들을 세션에 저장시켜놓는다.
+	@ResponseBody
+	@RequestMapping(value="/naverLoginCertification", method=RequestMethod.GET)
+	public String naverLoginCertificationLoginGet(HttpSession session, LoginVO vo) {
+		session.setAttribute("sLoginVO", vo);
+		session.setAttribute("sLogin", "naver");
+		return "";
+	}
+	
+	// 네이버 로그인 완료후 수행할 내용들을 기술한다.
+	@RequestMapping(value="/memberNaverLogin", method=RequestMethod.GET)
+	public String memberNaverLoginGet(HttpSession session, HttpServletRequest request, HttpServletResponse response,
+			String nickName, String email, String name, String mid,
+			LoginVO loginVo) {
+		
+		session.setAttribute("sLogin", "naver");
+		//loginVo = (LoginVO) session.getAttribute("sLoginVO");
+		//mid = loginVo.getMid();
+	  //nickName = loginVo.getNickName();
+	  //email = loginVo.getEmail();
+		
+		// 네이버 로그인한 회원이 현재 우리 회원인지를 조회한다.
+		// 이미 가입된 회원이라면 서비스를 사용하게 하고, 그렇지 않으면 강제로 회원 가입시킨다.
+		MemberVO vo = memberService.getMemberNickNameEmailCheck(loginVo.getNickName(), loginVo.getEmail());
+		
+		// 현재 우리회원이 아니면 자동회원가입처리..(가입필수사항: 아이디,닉네임,이메일) - 아이디는 이메일주소의 '@'앞쪽 이름을 사용하기로 한다.
+		if(vo == null) {
+			// 아이디 결정하기
+			//mid = email.substring(0, email.indexOf("@"));
+			
+		  // 같은 아이디가 존재하면 가입할 수 없도록 처리했다.
+			MemberVO vo2 = memberService.getMemberIdCheck(mid);
+			if(vo2 != null) return "redirect:/msg/midSameSearch";
+
+			// 임시 비밀번호 발급하기(UUID 8자리로 발급하기로 한다. -> 발급후 암호화시켜 DB에 저장)
+			UUID uid = UUID.randomUUID();
+			String pwd = uid.toString().substring(0,8);
+			pwd = "0000";		// 여기선 학습용이기에 pwd는 '0000'으로 설정했다.
+			session.setAttribute("sImsiPwd", pwd);	// 임시비밀번호를 발급하여 로그인후 변경처리하도록 한다.
+			pwd = passwordEncoder.encode(pwd);
+			
+			// 새로 발급된 임시비밀번호를 메일로 전송처리한다.
+			//  메일 처리부분... 생략함.
+			
+			// 자동 회원 가입처리한다.
+			memberService.setNaverMemberInputOk(loginVo.getMid(), pwd, loginVo.getNickName(), loginVo.getEmail(), loginVo.getName());
+			
+			// 가입 처리된 회원의 정보를 다시 읽어와서 vo에 담아준다.
+			vo = memberService.getMemberIdCheck(loginVo.getMid());
+		}
+		// 만약에 탈퇴신청한 회원이 네이버로그인처리하였다라면 'userDel'필드를 'NO'로 업데이트한다.
 		if(!vo.getUserDel().equals("NO")) {
 			memberService.setMemberUserDelCheck(vo.getMid());
 		}
@@ -160,7 +307,14 @@ public class MemberController {
 			return "redirect:/msg/memberLoginNo";
 		}
 	}
+	
+	// 네이버에도 CallBack된후 보내줄 네이버 주소
+	@RequestMapping(value="/memberLoginNew", method=RequestMethod.GET)
+	public String memberLoginNewGet() {
+		return "member/memberLoginNew";
+	}
 
+	// 일반 로그 아웃 처리
 	@RequestMapping(value="/memberLogout", method=RequestMethod.GET)
 	public String memberLogoutGet(HttpSession session) {
 		String mid = (String) session.getAttribute("sMid");
@@ -168,6 +322,12 @@ public class MemberController {
 		session.invalidate();
 		
 		return "redirect:/msg/memberLogout?mid="+mid;
+	}
+	
+	// 구글/네이버 로그아웃
+	@RequestMapping(value="/googleNaverLogout", method=RequestMethod.GET)
+	public String googleNaverLogoutGet() {
+		return "member/googleNaverLogout";
 	}
 	
 	@RequestMapping(value = "/memberMain", method=RequestMethod.GET)
@@ -199,7 +359,6 @@ public class MemberController {
 	// 회원가입처리
 	@RequestMapping(value = "/memberJoin", method=RequestMethod.POST)
 	public String memberJoinPost(MultipartFile fName, MemberVO vo) {
-		//System.out.println("memberVo : " + vo);
 		// 아이디 중복 체크
 		if(memberService.getMemberIdCheck(vo.getMid()) != null) {
 			return "redirect:/msg/memberIdCheckNo";
@@ -420,7 +579,6 @@ public class MemberController {
 	// 회원 정보 수정처리..
 	@RequestMapping(value = "/memberUpdateOk", method = RequestMethod.POST)
 	public String memberUpdateOkPost(MultipartFile fName, MemberVO vo, HttpSession session) {
-		System.out.println("vo : " + vo);
 		// 닉네임 체크
 		String nickName = (String) session.getAttribute("sNickName");
 		if(memberService.getMemberNickNameCheck(vo.getNickName()) != null && !nickName.equals(vo.getNickName())) {

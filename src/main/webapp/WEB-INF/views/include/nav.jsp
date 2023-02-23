@@ -12,8 +12,10 @@
 <div class="w3-top">
   <div class="w3-bar w3-black w3-card">
     <a class="w3-bar-item w3-button w3-padding-large w3-hide-medium w3-hide-large w3-right" href="javascript:void(0)" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
-    <a href="http://192.168.50.20:9090/javawspring" class="w3-bar-item w3-button w3-padding-large">HOME</a>
+    <!-- <a href="http://192.168.50.20:9090/javawspring" class="w3-bar-item w3-button w3-padding-large">HOME</a> -->
+    <a href="http://localhost:9090/javawspring" class="w3-bar-item w3-button w3-padding-large">HOME</a>
     <a href="${ctp}/guest/guestList" class="w3-bar-item w3-button w3-padding-large w3-hide-small">Guest</a>
+    <a href="${ctp}/notify/topNoticeList" class="w3-bar-item w3-button w3-padding-large w3-hide-small">Notice</a>
     <c:if test="${sLevel <= 4}">
 	    <a href="${ctp}/board/boardList" class="w3-bar-item w3-button w3-padding-large w3-hide-small">Board</a>
 	    <a href="${ctp}/pds/pdsList" class="w3-bar-item w3-button w3-padding-large w3-hide-small">Pds</a>
@@ -34,8 +36,11 @@
 	      <button class="w3-padding-large w3-button" title="More">Study2 <i class="fa fa-caret-down"></i></button>     
 	      <div class="w3-dropdown-content w3-bar-block w3-card-4">
 	        <a href="${ctp}/study/qrCode" class="w3-bar-item w3-button">쿠폰(QR코드)</a>
+	        <a href="${ctp}/study/captcha" class="w3-bar-item w3-button">캡차 연습</a>
+	        <a href="${ctp}/study/thumbnail" class="w3-bar-item w3-button">썸네일 연습</a>
 	        <a href="${ctp}/study/kakaomap/kakaomap" class="w3-bar-item w3-button">카카오맵</a>
-	        <a href="#" class="w3-bar-item w3-button">구글차트</a>
+	        <a href="${ctp}/study/googleChart" class="w3-bar-item w3-button">구글차트</a>
+	        <a href="${ctp}/study/googleChart2" class="w3-bar-item w3-button">구글차트2</a>
 	        <a href="${ctp}/errorPage/error" class="w3-bar-item w3-button">error연습</a>
 	        <a href="${ctp}/study/transaction/transaction" class="w3-bar-item w3-button">트랜잭션</a>
 	        <a href="#" class="w3-bar-item w3-button">장바구니</a>
@@ -49,7 +54,7 @@
 	        <a href="${ctp}/dbShop/dbMyOrder" class="w3-bar-item w3-button">주문(배송)현황</a>
 	        <a href="${ctp}/study/merchant" class="w3-bar-item w3-button">결재연습</a>
 	        <a href="#" class="w3-bar-item w3-button">QnA</a>
-	        <a href="#" class="w3-bar-item w3-button">1:1문의</a>
+	        <a href="${ctp}/inquiry/inquiryList" class="w3-bar-item w3-button">1:1문의</a>
 	      </div>
 	    </div>
 	    <div class="w3-dropdown-hover w3-hide-small">
@@ -74,7 +79,8 @@
       <a href="${ctp}/member/memberLogin" class="w3-padding-large w3-button">Login</a>
       <a href="${ctp}/member/memberJoin" class="w3-padding-large w3-button">Join</a>
     </c:if>
-    <c:if test="${!empty sLevel}"><a href="javascript:kakaoLogout();" class="w3-padding-large w3-button">Logout</a></c:if>
+    <%-- <c:if test="${!empty sLevel}"><a href="javascript:kakaoLogout();" class="w3-padding-large w3-button">Logout</a></c:if> --%>
+    <c:if test="${!empty sLevel}"><a href="javascript:googleNaverLogout();" class="w3-padding-large w3-button">Logout</a></c:if>
     <a href="javascript:void(0)" class="w3-padding-large w3-hover-red w3-hide-small w3-right"><i class="fa fa-search"></i></a>
   </div>
 </div>
@@ -103,5 +109,32 @@
 		});
 		
 		location.href = "${ctp}/member/memberLogout";
+	}
+	
+	// 구글 로그아웃하기
+	var childWindow = "";
+	function googleNaverLogout() {
+		/*
+		$.ajax({
+			type : "get",
+			url  : "${ctp}/member/googleLogout",
+		});
+		location.href="https://accounts.google.com/logout";
+    location.reload();
+    location.href = "${ctp}/member/memberLogout";
+		*/
+		//location.href = "${ctp}/member/googleLogout";
+		if('${sLogin}' == 'naver' || '${sLogin}' == 'google') {
+			//alert("2.000....${sLogin}......");
+			var url = "${ctp}/member/googleNaverLogout";
+			childWindow = window.open(url, "googleNaverWindow", "width=500, height=200");
+			setTimeout(() => {
+	    	if(childWindow != null) childWindow.close();		  
+	      location.href = "${ctp}/member/memberLogout";
+		  }, 1500);
+		}
+		else {
+			kakaoLogout();
+		}
 	}
 </script>

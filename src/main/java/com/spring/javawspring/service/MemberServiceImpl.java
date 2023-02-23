@@ -161,5 +161,10 @@ public class MemberServiceImpl implements MemberService {
 	public void setMemberUserDelCheck(String mid) {
 		memberDAO.setMemberUserDelCheck(mid);
 	}
+
+	@Override
+	public void setNaverMemberInputOk(String mid, String pwd, String nickName, String email, String name) {
+		memberDAO.setNaverMemberInputOk(mid, pwd, nickName, email, name);
+	}
 	
 }

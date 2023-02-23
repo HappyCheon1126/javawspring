@@ -340,7 +340,7 @@
   </table>
   <table class="table table-bordered">
     <tr>
-      <th>글쓴이${vo.idx}</th>
+      <th>글쓴이</th>
       <td>${vo.nickName}</td>
       <th>글쓴날짜</th>
       <td>${fn:substring(vo.WDate,0,fn:length(vo.WDate)-2)}</td>
@@ -378,7 +378,8 @@
     </tr>
     <tr>
       <th>글내용</th>
-      <td colspan="3" style="height:220px">${fn:replace(vo.content, newLine, "<br/>")}</td>
+      <%-- <td colspan="3" style="height:220px">${fn:replace(vo.content, newLine, "<br/>")}</td> --%>
+      <td colspan="3" style="height:220px">${vo.content}</td>
     </tr>
     <tr>
       <td colspan="4" class="text-center">
