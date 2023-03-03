@@ -18,3 +18,5 @@ ____
 **반갑**습니다.<br> <!-- ** : 진하게 -->
 ~~반갑~~습니다.<br> <!-- ~~ : 취소선 -->
 <img src="http://49.142.157.251:9090/green2209S_20/data/ckeditor/product/755f7328-cd07-41db-adb7-facaede31cb5_1.jpg" width="200px"/><br/>
+
+![로고](https://t1.daumcdn.net/cafeattach/1YqmY/0b2ca08f384203c1c695cf67c5f4e157ca4533c5?logo=쇼핑몰&logoColor=ff0000)
