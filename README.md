@@ -62,3 +62,5 @@ ____
 /></a>
 
 <br/>
+[![Hits](https://hits.sh/hits.sh/github.com/silentsoft/hits.svg)](https://hits.sh/hits.sh/github.com/silentsoft/hits/)
+
