@@ -52,3 +52,13 @@ ____
 <br>
 ![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=anuraghazra&show_icons=true&theme=radical)
 <br/>
+
+<br/>
+[![Hits](https://hits.sh/github.com/silentsoft/hits.svg)](https://hits.sh/github.com/silentsoft/hits/)
+
+<br/>
+<a href="https://hits.sh/github.com/silentsoft/hits/"
+  ><img alt="Hits" src="https://hits.sh/github.com/silentsoft/hits.svg"
+/></a>
+
+<br/>
